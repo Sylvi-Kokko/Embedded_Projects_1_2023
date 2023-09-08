@@ -10,6 +10,14 @@ unsigned long previousMillis = 0;
 int ledState = 0;
 float x = 0, y = 0;
 
+ISR(){
+  lcd.clear();
+  lcd.setCursor(7,1);
+  lcd.printl("Boo!");
+}
+
+attatchInterrupt(2, ISR, FALLING);
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -20,9 +28,9 @@ void loop() {
   x = analogRead(vrx);
   y = analogRead(vry);
   lcd.setCursor(0,1);
-  lcd.println(x);
+  lcd.println((x/822.0)*5);
   lcd.setCursor(0, 2);
-  lcd.println(y);
+  lcd.println((y/822.0)*5);
   delay(1000);
   lcd.clear();
   }
