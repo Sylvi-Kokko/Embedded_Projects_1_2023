@@ -9,21 +9,43 @@ int analogPin1 = A0;   // potentiometer connected to analog pin 0
 int analogPin2 = A1;
 int val1 = 0;  
 int val2 = 0;
+const byte buttonPin = 3;
+bool isOn = true;
+
+void interrut(){
+    Serial.print("Pressed");
+  if (isOn){
+    isOn = false;
+  }
+  else if (!isOn){
+    isOn = true;
+  }
+}
 
 void setup() {
   // put your setup code here, to run once:
+  pinMode(buttonPin, INPUT);
   pinMode(ledPin1, OUTPUT);  // sets the pin as output
   pinMode(ledPin2, OUTPUT);  // sets the pin as output
+
+  attachInterrupt(digitalPinToInterrupt(3), interrut, FALLING);
   Serial.begin(9600);
   lcd.begin(20, 4);
 }
 
 void loop() {
   lcd.clear();
-  val1 = analogRead(analogPin1);  // read the input pin
-  val2 = analogRead(analogPin2);
-  analogWrite(ledPin1, val1 / 4); // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
-  analogWrite(ledPin2, val2 / 4);
+  if (isOn){
+    val1 = analogRead(analogPin1);  // read the input pin
+    val2 = analogRead(analogPin2);
+    analogWrite(ledPin1, val1 / 4); // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
+    analogWrite(ledPin2, val2 / 4);
+  }
+  else{
+    analogWrite(ledPin1, 0);
+    analogWrite(ledPin2, 0);
+  }
+
   lcd.setCursor(0, 0);
   lcd.print("Value 1 is: ");
   lcd.print(val1);
@@ -31,5 +53,7 @@ void loop() {
   lcd.setCursor(0,1);
   lcd.print("Value 2 is: ");
   lcd.print(val2);
+  lcd.setCursor(0,2);
+  lcd.print(isOn);  
   delay(30);
   }
