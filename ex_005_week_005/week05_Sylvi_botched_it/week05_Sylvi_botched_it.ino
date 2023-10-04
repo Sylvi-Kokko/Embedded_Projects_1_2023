@@ -14,7 +14,11 @@ int analogPin1 = A0;   // potentiometer connected to analog pin 0
 int analogPin2 = A1;
 int val1 = 0;  
 int val2 = 0;
-int speedx, speedy;
+int st_Y = 496;
+int st_X = 503;
+int pwm_R = 0;
+int pwm_L = 0;
+
 const byte buttonPin = 19;
 bool isOn = true;
 
@@ -39,44 +43,43 @@ void setup() {
 void loop() {
   lcd.clear();
   if (isOn){
-    val1 = analogRead(analogPin1);  // read the input pin
-    val2 = analogRead(analogPin2);
-    speedx = map(val1, 0, 1023, -255, 255);
-    speedy = map(val2, 0, 1023, -255, 255);
-    if(speedy > 520){
-      analogWrite(Motor_L_pwm_pin,Motor_forward);
-      analogWrite(Motor_L_pwm_pin, speedy);
+    val1 = analogRead(analogPin1);  // read the input pin 0 - 1023
+    val2 = analogRead(analogPin2); 
+    if ((st_Y - val1) > 5){ //If value from starting - current is positive, move backwards
+      digitalWrite(Motor_R_dir_pin, Motor_return);
+      pwm_R = 496 - val1;
     }
-    else if(speedy < 480){
-      analogWrite(Motor_L_pwm_pin,Motor_return);
-      analogWrite(Motor_L_pwm_pin, speedy);      
+    else if((st_Y - val1) < -5){ //If value from starting - current is negative move backwards
+      digitalWrite(Motor_R_dir_pin, Motor_forward);
+      pwm_R = val1; //if reading is 0 go full speed
     }
-    else{
-      analogWrite(Motor_L_pwm_pin, 0);
+    else {
+      pwm_R = 0;
     }
-    if (speedx > 520){
-      analogWrite(Motor_R_pwm_pin,Motor_forward);
-      analogWrite(Motor_R_pwm_pin, speedx);      
+    if ((st_X - val2) > 5){ //
+      digitalWrite(Motor_L_dir_pin, Motor_return); 
+      pwm_L = 503 - val2;
     }
-    else if(speedx < 480){
-      analogWrite(Motor_R_pwm_pin, Motor_return);
-      analogWrite(Motor_R_pwm_pin, speedx);      
+    else if((st_X - val2) < -5){
+      digitalWrite(Motor_L_dir_pin, Motor_forward);
+      pwm_L = val2;
     }
-    else{
-      analogWrite(Motor_R_pwm_pin, 0);
+    else {
+      pwm_L = 0;
     }
+    analogWrite(Motor_L_pwm_pin,pwm_L);
+    analogWrite(Motor_R_pwm_pin,pwm_R);
     lcd.setCursor(0, 0);
     lcd.print("Value 1 is: ");
-    lcd.print(val1);
+    lcd.print(pwm_R);
     lcd.print(" and");
     lcd.setCursor(0,1);
     lcd.print("Value 2 is: ");
-    lcd.print(val2);
+    lcd.print(pwm_L);
     lcd.setCursor(0,2);
     lcd.print(isOn);  
-    delay(30);
-    val1 = 0;   
-    val2 = 0;  
+    delay(30); 
+
   }
   else{
     analogWrite(Motor_L_pwm_pin,Motor_forward);
