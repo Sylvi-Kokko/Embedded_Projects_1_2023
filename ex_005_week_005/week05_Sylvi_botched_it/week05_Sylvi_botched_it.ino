@@ -5,6 +5,10 @@
 #define Motor_R_dir_pin       8
 #define Motor_L_pwm_pin       9
 #define Motor_R_pwm_pin       10
+#define Encoder_PA1           23
+#define Encoder_PA2           24
+#define Encoder_Int5          3
+#define Encoder_INT4          2
 
 const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -14,8 +18,8 @@ int analogPin1 = A0;   // potentiometer connected to analog pin 0
 int analogPin2 = A1;
 int val1 = 0;  
 int val2 = 0;
-int st_Y = 496;
-int st_X = 503;
+int st_Y = 503;
+int st_X = 496;
 int pwm_R = 0;
 int pwm_L = 0;
 
@@ -35,6 +39,8 @@ void interrut(){
 void setup() {
   
   pinMode(buttonPin, INPUT);
+  pinMode(Encoder_PA2, INPUT);
+  pinMode(Encoder_INT4, INPUT);  
   attachInterrupt(digitalPinToInterrupt(19), interrut, FALLING);
   Serial.begin(9600);
   lcd.begin(20, 4);
@@ -43,26 +49,26 @@ void setup() {
 void loop() {
   lcd.clear();
   if (isOn){
-    val1 = analogRead(analogPin1);  // read the input pin 0 - 1023
-    val2 = analogRead(analogPin2); 
+    val1 = analogRead(analogPin2);  // read the input pin 0 - 1023
+    val2 = analogRead(analogPin1); 
     if ((st_Y - val1) > 5){ //If value from starting - current is positive, move backwards
       digitalWrite(Motor_R_dir_pin, Motor_return);
-      pwm_R = 496 - val1;
+      pwm_R = 1023 - ((val2/st_Y)*1023);
     }
     else if((st_Y - val1) < -5){ //If value from starting - current is negative move backwards
       digitalWrite(Motor_R_dir_pin, Motor_forward);
-      pwm_R = val1; //if reading is 0 go full speed
+      pwm_R = (val1/st_Y)*1023; //if reading is 0 go full speed
     }
     else {
       pwm_R = 0;
     }
     if ((st_X - val2) > 5){ //
       digitalWrite(Motor_L_dir_pin, Motor_return); 
-      pwm_L = 503 - val2;
+      pwm_L = 1023 - ((val2/st_X)*1023);
     }
     else if((st_X - val2) < -5){
       digitalWrite(Motor_L_dir_pin, Motor_forward);
-      pwm_L = val2;
+      pwm_L = (val2/st_X)*1023;
     }
     else {
       pwm_L = 0;
@@ -70,13 +76,18 @@ void loop() {
     analogWrite(Motor_L_pwm_pin,pwm_L);
     analogWrite(Motor_R_pwm_pin,pwm_R);
     lcd.setCursor(0, 0);
-    lcd.print("Value 1 is: ");
-    lcd.print(pwm_R);
-    lcd.print(" and");
+    lcd.print("Encoder B right: ");
+    lcd.print(digitalRead(Encoder_INT4));
     lcd.setCursor(0,1);
-    lcd.print("Value 2 is: ");
-    lcd.print(pwm_L);
+    lcd.print("Encoder B left: ");
+    lcd.print(digitalRead(Encoder_PA2));
     lcd.setCursor(0,2);
+    lcd.print("Encoder A right: ");
+    lcd.print(digitalRead(Encoder_Int5));
+    lcd.setCursor(1,3);
+    lcd.print("Encoder A left: ");
+    lcd.print(digitalRead(Encoder_PA1));
+    lcd.setCursor(0,4);
     lcd.print(isOn);  
     delay(30); 
 
