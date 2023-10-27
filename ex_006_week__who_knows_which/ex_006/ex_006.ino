@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <Wire.h>
-#define Motor_forward         0
-#define Motor_return          1
+#define Motor_forward         1
+#define Motor_return          0
 #define Motor_L_dir_pin       7
 #define Motor_R_dir_pin       8
 #define Motor_L_pwm_pin       9
@@ -32,11 +32,62 @@ void interrut(){
     isOn = true;
   }
 }
+
+void count_reset() {
+  left_count = 0;
+  right_count = 0;
+}
+
 void l_rising(){
   left_count +=1;
 }
 void r_rising(){
   right_count +=1;
+}
+
+int left_turn(int cm){
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  while(left_count < (cm*14)){
+    analogWrite(Motor_L_pwm_pin,1000);
+  }
+  analogWrite(Motor_L_pwm_pin,0);
+  count_reset();
+  return 0;
+}
+
+int right_turn(int cm){
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  while(right_count < (cm*14)){
+    analogWrite(Motor_R_pwm_pin,1000);
+  }
+  analogWrite(Motor_R_pwm_pin,0);
+  count_reset();
+  return 0;
+}
+
+int go_straight(int cm){
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  while(left_count < (cm*14)){
+    analogWrite(Motor_L_pwm_pin,995);
+    analogWrite(Motor_R_pwm_pin,1000);
+  }
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  count_reset();
+  return 0;
+}
+int go_back(int cm){
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  while(left_count < (cm*14)){
+    analogWrite(Motor_L_pwm_pin,1000);
+    analogWrite(Motor_R_pwm_pin,1000);
+  }
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  count_reset();
+  return 0;
 }
 
 void setup() {
@@ -54,32 +105,18 @@ void setup() {
 void loop() {
   lcd.clear();
   if (isOn){
-    val1 = analogRead(analogPin2);  // read the input pin 0 - 1023
-    val2 = analogRead(analogPin1); 
-    if ((st_Y - val1) > 5){ //If value from starting - current is positive, move backwards
-      digitalWrite(Motor_R_dir_pin, Motor_return);
-      pwm_R = 1023 - ((val2/st_Y)*1023);
-    }
-    else if((st_Y - val1) < -5){ //If value from starting - current is negative move backwards
-      digitalWrite(Motor_R_dir_pin, Motor_forward);
-      pwm_R = (val1/st_Y)*1023; //if reading is 0 go full speed
-    }
-    else {
-      pwm_R = 0;
-    }
-    if ((st_X - val2) > 5){ //
-      digitalWrite(Motor_L_dir_pin, Motor_return); 
-      pwm_L = 1023 - ((val2/st_X)*1023);
-    }
-    else if((st_X - val2) < -5){
-      digitalWrite(Motor_L_dir_pin, Motor_forward);
-      pwm_L = (val2/st_X)*1023;
-    }
-    else {
-      pwm_L = 0;
-    }
-    analogWrite(Motor_L_pwm_pin,pwm_L);
-    analogWrite(Motor_R_pwm_pin,pwm_R);
+
+    //Hard coded maze
+    delay(6000);
+    go_straight(65);
+    right_turn(18);
+    go_straight(52);
+    //////////////////////
+
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+
+    //LCD //////////////////////////////////
     lcd.setCursor(0, 0);
     lcd.print("Encoder B right: ");
     lcd.print(right_count);
@@ -92,10 +129,10 @@ void loop() {
     lcd.setCursor(1,3);
     lcd.print("Encoder A left: ");
     lcd.print(digitalRead(Encoder_PA1));
-    lcd.setCursor(0,4);
-    lcd.print(isOn);  
-    delay(30); 
-
+    lcd.setCursor(0,4);     
+    //////////////////////////////////////////
+    delay(3000); 
+    
   }
   else{
     analogWrite(Motor_L_pwm_pin,Motor_forward);
