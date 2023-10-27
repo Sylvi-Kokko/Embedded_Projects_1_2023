@@ -9,6 +9,7 @@
 #define Encoder_PA1           23
 #define Encoder_PA2           24
 #define Encoder_Int5          3
+//one change
 #define Encoder_INT4          2
 
 const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
