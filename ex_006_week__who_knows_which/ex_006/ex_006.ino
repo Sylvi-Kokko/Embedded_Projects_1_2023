@@ -1,4 +1,5 @@
 #include <LiquidCrystal.h>
+#include <Wire.h>
 #define Motor_forward         0
 #define Motor_return          1
 #define Motor_L_dir_pin       7
