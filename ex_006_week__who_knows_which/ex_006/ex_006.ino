@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <Wire.h>
-#define Motor_forward         0
-#define Motor_return          1
+#define Motor_forward         1
+#define Motor_return          0
 #define Motor_L_dir_pin       7
 #define Motor_R_dir_pin       8
 #define Motor_L_pwm_pin       9
@@ -45,44 +45,49 @@ void r_rising(){
   right_count +=1;
 }
 
-void left_turn(cm){
+int left_turn(int cm){
   digitalWrite(Motor_L_dir_pin, Motor_return);
   while(left_count < (cm*14)){
     analogWrite(Motor_L_pwm_pin,1000);
   }
   analogWrite(Motor_L_pwm_pin,0);
   count_reset();
+  return 0;
 }
-void right_turn(cm){
+
+int right_turn(int cm){
   digitalWrite(Motor_R_dir_pin, Motor_return);
   while(right_count < (cm*14)){
     analogWrite(Motor_R_pwm_pin,1000);
   }
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
+  return 0;
 }
 
-void go_straight(cm){
+int go_straight(int cm){
   digitalWrite(Motor_L_dir_pin, Motor_forward);
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   while(left_count < (cm*14)){
-    analogWrite(Motor_L_pwm_pin,1000);
-    analogWrite(Motor_L_pwm_pin,1000);
+    analogWrite(Motor_L_pwm_pin,995);
+    analogWrite(Motor_R_pwm_pin,1000);
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
+  return 0;
 }
-void go_back(cm){
+int go_back(int cm){
   digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_return);
   while(left_count < (cm*14)){
     analogWrite(Motor_L_pwm_pin,1000);
-    analogWrite(Motor_L_pwm_pin,1000);
+    analogWrite(Motor_R_pwm_pin,1000);
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
+  return 0;
 }
 
 void setup() {
@@ -102,9 +107,10 @@ void loop() {
   if (isOn){
 
     //Hard coded maze
-    go_straight(50);
-    left_turn(19);
-    go_straight(50);
+    delay(6000);
+    go_straight(65);
+    right_turn(18);
+    go_straight(52);
     //////////////////////
 
     analogWrite(Motor_L_pwm_pin,0);
@@ -125,7 +131,7 @@ void loop() {
     lcd.print(digitalRead(Encoder_PA1));
     lcd.setCursor(0,4);     
     //////////////////////////////////////////
-    delay(30); 
+    delay(3000); 
     
   }
   else{
