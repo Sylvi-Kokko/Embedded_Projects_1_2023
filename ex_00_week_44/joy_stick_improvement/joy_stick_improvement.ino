@@ -90,17 +90,10 @@ void loop() {
     lcd.print(isOn);  
   }           
   lcd.setCursor(0, 0);
-  lcd.print("pwm_R is: ");
-  lcd.print(pwm_R);
+  lcd.print("Left count is: ");
+  lcd.print(left_count);
   lcd.setCursor(0,1);
-  lcd.print("pwm_L is: ");
-  lcd.print(pwm_L);
-  lcd.setCursor(0,2);
-  lcd.print("Direction is: ");
-  lcd.print(dir_R);
-  lcd.setCursor(0,3);
-  lcd.print(" and ");
-  lcd.print(dir_L);
-  lcd.setCursor(1,3);
+  lcd.print("Right count is: ");
+  lcd.print(right_count);
   delay(30);
   }
