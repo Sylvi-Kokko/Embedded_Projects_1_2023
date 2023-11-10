@@ -13,21 +13,17 @@ const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 int analogPin1 = A0;   // potentiometer connected to analog pin 0
 int analogPin2 = A1;
-int y_akseli, x_pwm, pwm_R, pwm_L, dir_L, dir_R;
+int y_akseli, x_pwm, pwm_R, pwm_L, dir_L, dir_R, joystick_y, joystick_x;
 float x_akseli, val1, val2;
-int left_count = 0;
-int right_count = 0;
+volatile int left_count = 0;
+volatile int right_count = 0;
+float joy_x, joy_y;
 
 const byte buttonPin = 19;
-bool isOn = true;
+bool isOn = false;
 
 void interrut(){
-  if (isOn){
-    isOn = false;
-  }
-  else if (!isOn){
-    isOn = true;
-  }
+  isOn = !isOn;
 }
 void l_rising(){
   left_count +=1;
@@ -51,38 +47,21 @@ void setup() {
 void loop() {
   lcd.clear();
   if (isOn){
-    val1 = analogRead(analogPin2);
-    val2 = analogRead(analogPin1);
-    val2 = val2 + 15.5;
-    val1 = val1 + 9.5;
-    Serial.println("Val1 is: ");
-    Serial.println(val1);
-    Serial.println("Val2 is: ");
-    Serial.println(val2);
-    x_pwm = map(val2, 0, 1023, -500, 500); //-100 to 100
-    val2 = val2/496; //0-2
-    x_akseli = map(val2, 0, 2, 0, 1); //0  to  1
-    y_akseli = map(val1, 0, 1023, -500, 500); //-100 to 100
-    x_pwm = abs(x_pwm); // 100 to 0 to 100
-    ////Direction
-    dir_R = x_akseli;
-    dir_R == 0 ? dir_L = 1 : dir_L = 0;
-    if((x_akseli == 0) && (y_akseli < 0)){
-      dir_L = 1;
-      dir_R = 1; 
-    }
-    else if ((x_akseli == 0) && (y_akseli > 0)){
-      dir_L = 0;
-      dir_R = 0; 
-    }
-    digitalWrite(Motor_L_dir_pin, dir_L);
-    digitalWrite(Motor_R_dir_pin, dir_R); 
-    pwm_L = x_pwm + abs(y_akseli);
-    pwm_R = x_pwm + abs(y_akseli);;
-    analogWrite(Motor_L_pwm_pin,pwm_L);
-    analogWrite(Motor_R_pwm_pin,pwm_R);
-    delay(30); 
+    joystick_y = analogRead(analogPin2);
+    joystick_x = analogRead(analogPin1);
+    
+    // -1 to 1
+    joy_y = ((float)joystick_y - 503.0f) / 503.0f;
+    joy_x = ((float)joystick_x - 496.0f) / 496.0f;
 
+    auto motor_1 = -joy_x + joy_y;
+    auto motor_2 =  joy_x + joy_y;
+    
+    digitalWrite(Motor_L_pwm_pin, abs( motor_1 * 500.0f));    
+    digitalWrite(Motor_R_pwm_pin, abs( motor_2 * 500.0f));    
+    digitalWrite(Motor_L_dir_pin, motor_1 < 0.0f);
+    digitalWrite(Motor_R_dir_pin, motor_2 < 0.0f);
+    delay(30); 
   }
   else{
     analogWrite(Motor_L_pwm_pin,0);
@@ -95,5 +74,11 @@ void loop() {
   lcd.setCursor(0,1);
   lcd.print("Right count is: ");
   lcd.print(right_count);
+  lcd.setCursor(0, 2);
+  lcd.print("The joy_x is: ");
+  lcd.print(joystick_x);
+  lcd.setCursor(0,3);
+  lcd.print("The joy_y is: ");
+  lcd.print(joystick_y);
   delay(30);
   }
