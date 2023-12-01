@@ -11,6 +11,8 @@
 #define Encoder_PA2           24
 #define Encoder_Int5          3
 #define Encoder_INT4          2
+#define TX 30
+#define RX 32
 
 const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
