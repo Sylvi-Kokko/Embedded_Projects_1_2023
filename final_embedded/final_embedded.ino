@@ -1,3 +1,10 @@
+/**
+* @file final_embedded.ino
+* @authors Dordze Ostrowski, Sylvi Kokko
+* @brief Project for Embedded Projects course (TAMK, Fall 2023)
+* @date 2023-12-01
+*/
+
 #include <LiquidCrystal.h>
 #include <Wire.h>
 #define CMPS14_address 0x60
@@ -14,23 +21,18 @@
 
 const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-int analogPin1 = A0;   // potentiometer connected to analog pin 0
+int analogPin1 = A0;   
 int analogPin2 = A1;
-int val;
-int pwm_R, pwm_L;  
+int pwm_R, pwm_L, val, y_akseli, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;  
 int st_Y = 503;
 int st_X = 496;
 int left_count = 0;
 int right_count = 0;
 const byte buttonPin = 19;
 bool isOn = true;
-int y_akseli, x_pwm, dir_L, dir_R;
 float x_akseli, val1, val2;
-int bigpulsecountleft;
-int bigpulsecountright;
 
-
-void interrut(){
+void buttonPressed(){ 
   if (isOn){
     isOn = false;
   }
@@ -53,13 +55,14 @@ void r_rising(){
   bigpulsecountright += 1;
 }
 
+//Compass reading
 int wiregetdegree(){
   int lcddegree = 0;
   Wire.requestFrom(CMPS14_address, 1, true);
     Wire.beginTransmission(CMPS14_address);
     Wire.write(1);
     Wire.endTransmission(false);
-  if (Wire.available() >= 1)
+  if (Wire.available() >= 1) 
   {
     byte raw = Wire.read();
     lcddegree = 0.0;
@@ -75,10 +78,11 @@ int wiregetdegree(){
 return lcddegree;
 }
 
+//Movement functions 
 int left_turn(int cm){
-  digitalWrite(Motor_L_dir_pin, Motor_return);
-  digitalWrite(Motor_R_dir_pin, Motor_forward);
-  while(right_count < (cm*1.4)){
+  digitalWrite(Motor_L_dir_pin, Motor_return); 
+  digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
+  while(right_count < (cm*1.4)){ //Move until count and inputted cm match up
     analogWrite(Motor_L_pwm_pin,255);
     analogWrite(Motor_R_pwm_pin,255);
   }
@@ -102,7 +106,7 @@ int right_turn(int cm){
 }
 
 int go_straight(int cm){
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   while(right_count < (cm*14)){
     analogWrite(Motor_L_pwm_pin,255);
@@ -248,19 +252,7 @@ void joysticksteering(){
     val2 = val2 + 15.5;
     val1 = val1 + 7.5;
     x_pwm = map(val2, 0, 1023, -90, 90); //-100 to 100
-    //val2 = val2/350; //0-2 496
-    //x_akseli = map(val2, 0, 2, 0, 1); //0  to  1
     y_akseli = map(val1, 0, 1023, -160, 160); //-100 to 100
-    //x_pwm = abs(x_pwm); // 100 to 0 to 100
-    ///Direction
-
-
-    // dir_R = val2;
-    // if(val2 > 513.5){
-    //   dir_L = 1;
-    // }
-    // dir_R == 0 ? dir_L = 1 : dir_L = 0;
-    
     if((val1 < 509.5)){
       dir_L = 1;
       dir_R = 1;
@@ -300,18 +292,6 @@ void joysticksteering(){
       }
       
     }
-
-    /*dir_R = x_akseli;
-    dir_R == 0 ? dir_L = 1 : dir_L = 0;
-    
-    if((x_akseli == 0) && (y_akseli < 510.5)){
-      dir_L = 1;
-      dir_R = 1; 
-    }
-    else if ((x_akseli == 0) && (y_akseli > 512.5)){
-      dir_L = 0;
-      dir_R = 0; 
-    }*/
     digitalWrite(Motor_L_dir_pin, dir_L);
     digitalWrite(Motor_R_dir_pin, dir_R);
     
@@ -347,7 +327,7 @@ void setup() {
   pinMode(buttonPin, INPUT);
   pinMode(Encoder_Int4, INPUT);  
   pinMode(Encoder_Int5, INPUT);
-  attachInterrupt(digitalPinToInterrupt(19), interrut, FALLING);
+  attachInterrupt(digitalPinToInterrupt(19), buttonPressed, FALLING);
   attachInterrupt(digitalPinToInterrupt(2), r_rising, RISING);
   attachInterrupt(digitalPinToInterrupt(3), l_rising, RISING);
   Serial.begin(9600);
