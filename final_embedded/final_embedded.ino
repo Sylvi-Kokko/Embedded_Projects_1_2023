@@ -252,11 +252,11 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
     val1 = val1 + 7.5;
     x_pwm = map(val2, 0, 1023, -90, 90);
     y_pwm = map(val1, 0, 1023, -160, 160);
-    if((val1 < 509.5)){ //
-      dir_L = 1;
+    if((val1 < 509.5)){ //Go backwards 
+      dir_L = 1; //Set the direction
       dir_R = 1;
       if(x_pwm < -1){
-        pwm_L = -1*x_pwm + abs(y_pwm);
+        pwm_L = -1*x_pwm + abs(y_pwm); //Set the power by combining both axes 
         pwm_R = x_pwm + abs(y_pwm);
       }else{
         pwm_L = -1*x_pwm + abs(y_pwm);
@@ -264,7 +264,7 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
       }
       
     }
-    else if ((val1 > 513.5)){
+    else if ((val1 > 513.5)){ //Same as above but the opposite direction
       dir_L = 0;
       dir_R = 0; 
       if(x_pwm < -1){
@@ -274,31 +274,31 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
         pwm_L = -1*x_pwm + abs(y_pwm);
         pwm_R = x_pwm + abs(y_pwm);
       }
-    }else{
-      if(x_pwm > 2){
-      dir_L = 0;
+    }else{ //If the y is close enough to middle, just turn left or right
+      if(x_pwm > 2){ 
+      dir_L = 0; //Opposite directions make for more efficient turning
       dir_R = 1;
-      pwm_L = -x_pwm;
-      pwm_R = x_pwm;
+      pwm_L = -x_pwm; //When just turning, the power from x axis is enough
+      pwm_R = x_pwm; 
       }else if(x_pwm < -2){
       dir_L = 1;
       dir_R = 0;
       pwm_L = x_pwm;
       pwm_R = -x_pwm;
       }else{
-      pwm_L = 0;
+      pwm_L = 0; 
       pwm_R = 0;
       }
       
     }
-    digitalWrite(Motor_L_dir_pin, dir_L);
+    digitalWrite(Motor_L_dir_pin, dir_L); //Here the values for direction and speed are actually sent to the motors
     digitalWrite(Motor_R_dir_pin, dir_R);
     
     analogWrite(Motor_L_pwm_pin,pwm_L);
     analogWrite(Motor_R_pwm_pin,pwm_R);
 }
 
-String compdirection(int degree){
+String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
 if((degree>=0 && degree < 22.5)||(degree>=337.5)){
   return "N ";
 }else if(degree >= 22.5 && degree < 67.5){
@@ -321,20 +321,20 @@ if((degree>=0 && degree < 22.5)||(degree>=337.5)){
 }
 
 
-void setup() {
+void setup() { 
   Wire.begin();
   pinMode(buttonPin, INPUT);
   pinMode(Encoder_Int4, INPUT);  
   pinMode(Encoder_Int5, INPUT);
-  attachInterrupt(digitalPinToInterrupt(19), buttonPressed, FALLING);
-  attachInterrupt(digitalPinToInterrupt(2), r_rising, RISING);
-  attachInterrupt(digitalPinToInterrupt(3), l_rising, RISING);
+  attachInterrupt(digitalPinToInterrupt(19), buttonPressed, FALLING); //Detects button being pressed
+  attachInterrupt(digitalPinToInterrupt(2), r_rising, RISING); //Detects right wheel rotation
+  attachInterrupt(digitalPinToInterrupt(3), l_rising, RISING); //Detects left wheel rotation
   Serial.begin(9600);
   lcd.begin(20, 4);
 }
 
 void loop() {
-  if (steering_mode){
+  if (steering_mode){ //Wifi / Serial steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
     lcd.print("Steerviawifi/serial");
@@ -349,7 +349,7 @@ void loop() {
     lcd.print(" ");
     lcd.print(bigpulsecountright);
   }
-  else{
+  else{ //Joystick steering
     joysticksteering();
     lcd.setCursor(0, 0);
     lcd.print("Steerviajoystick");
