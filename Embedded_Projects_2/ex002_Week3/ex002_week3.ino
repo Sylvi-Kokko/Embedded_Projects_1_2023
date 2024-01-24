@@ -31,6 +31,7 @@ int left_count = 0;
 int right_count = 0;
 const byte buttonPin = 19;
 bool steering_mode = true;
+bool follow_mode = false;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
 float newDistance;
@@ -197,6 +198,14 @@ int turn_until(float target){ //
   return 0;
 }
 
+void follow_at(int distance) {
+  while (follow_mode) {
+    if (newDistance+2 < distance) {go_straight(1);}
+    else if (newDistance-2 > distance) {go_back(1);}
+    else {return;}
+  }
+}
+
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -209,6 +218,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int movement = message.indexOf("Move");
     int turn = message.indexOf("Turn");
     int until = message.indexOf("UNTIL");
+    int followDist = message.indexOf("Follow");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -241,7 +251,16 @@ void wifisteering(){ //Controlling the motion through wifi
         val = stat.toInt();
         turn_until(val); 
       }
-    }
+    }else if (followDist > -1){
+      Serial.println("Command = Follow ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+        follow_mode = !follow_mode;
+        follow_at(val);        
+      }
+    }    
     else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
@@ -332,7 +351,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(19), buttonPressed, FALLING); //Detects button being pressed
   attachInterrupt(digitalPinToInterrupt(2), r_rising, RISING); //Detects right wheel rotation
   attachInterrupt(digitalPinToInterrupt(3), l_rising, RISING); //Detects left wheel rotation
-  Serial.begin(115200);
+  Serial.begin(9600);
   lcd.begin(20, 4);
   if (myLIDAR.begin() == false) {
     Serial.println("Device did not acknowledge! Freezing.");
