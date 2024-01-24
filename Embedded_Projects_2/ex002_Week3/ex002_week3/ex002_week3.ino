@@ -258,13 +258,10 @@ void wifisteering(){ //Controlling the motion through wifi
     }
     else if (followTrim > -1){
       Serial.println("Command = Trimmer ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){
-        String stat = message.substring(pos_s + 1);
-        val = analogRead(trimmer2);
-        follow_dist = val/50;
-        isTrimmer = true;
-      }
+      String stat = message.substring(pos_s + 1);
+      val = analogRead(trimmer2);
+      follow_dist = val/50;
+      isTrimmer = true;
     }
     else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
