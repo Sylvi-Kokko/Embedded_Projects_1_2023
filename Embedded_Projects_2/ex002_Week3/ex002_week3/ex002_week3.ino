@@ -24,6 +24,7 @@ const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 int analogPin1 = A0;   
 int analogPin2 = A1;
+int trimmer2 = A2;
 int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;  
 int st_Y = 503;
 int st_X = 496;
@@ -31,7 +32,8 @@ int left_count = 0;
 int right_count = 0;
 const byte buttonPin = 19;
 bool steering_mode = true;
-bool follow_mode = false;
+bool isTrimmer =  false;
+int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
 float newDistance;
@@ -198,14 +200,6 @@ int turn_until(float target){ //
   return 0;
 }
 
-void follow_at(int distance) {
-  while (follow_mode) {
-    if (newDistance+2 < distance) {go_straight(1);}
-    else if (newDistance-2 > distance) {go_back(1);}
-    else {return;}
-  }
-}
-
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -219,6 +213,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int turn = message.indexOf("Turn");
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
+    int followTrim = message.indexOf("Trimmer");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -257,10 +252,20 @@ void wifisteering(){ //Controlling the motion through wifi
       if (pos_s > -1){
         String stat = message.substring(pos_s + 1);
         val = stat.toInt();
-        follow_mode = !follow_mode;
-        follow_at(val);        
+        follow_dist = val;  
+        isTrimmer = false;      
       }
-    }    
+    }
+    else if (followTrim > -1){
+      Serial.println("Command = Trimmer ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){
+        String stat = message.substring(pos_s + 1);
+        val = analogRead(trimmer2);
+        follow_dist = val/50;
+        isTrimmer = true;
+      }
+    }
     else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
@@ -392,10 +397,25 @@ void loop() {
     lcd.print(bigpulsecountright);
   }
   newDistance = myLIDAR.getDistance();
+  if (follow_dist > 0) {
+    if (isTrimmer){
+      if (newDistance+2 < isTrimmer) {go_straight(1);}
+      else if (newDistance-2 > isTrimmer) {go_back(1);}
+      else {return;}
+    }
+    else {
+      follow_dist = analogRead(A2)/50;
+      if (newDistance+2 < follow_dist) {go_straight(1);}
+      else if (newDistance-2 > follow_dist) {go_back(1);}
+      else {return;}
+    }
+  }
   lcd.setCursor(0, 3);
   lcd.print("Distance: ");
   lcd.print(newDistance/100);
-  lcd.print(" m");
+  lcd.print("m ");
+  lcd.print(analogRead(A2)/50);
+  Serial.print(follow_dist);
  /*  lcd.print("Compass = ");
   lcd.print(wiregetdegree());
   lcd.print(" ");
