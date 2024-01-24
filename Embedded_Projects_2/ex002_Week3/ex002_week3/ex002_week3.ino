@@ -200,6 +200,18 @@ int turn_until(float target){ //
   return 0;
 }
 
+void exe3(){
+  int dist = analogRead(A2)/50;
+  go_back(dist);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  while(right_count < (19*14)){ //Move until count and inputed cm match up
+    analogWrite(Motor_R_pwm_pin,255);
+  }
+  count_reset();
+  analogWrite(Motor_R_pwm_pin,0);
+  go_back(dist);
+}
+
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -214,6 +226,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
     int followTrim = message.indexOf("Trimmer");
+    int ex3 = message.indexOf("ex3");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -226,8 +239,7 @@ void wifisteering(){ //Controlling the motion through wifi
         }
           go_straight(val);
       }
-    }
-    else if (turn > -1){ //If turn was called 
+    }else if (turn > -1){ //If turn was called 
       Serial.println("Command = TURN ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){ //Same as above but right or left turn is called
@@ -255,15 +267,17 @@ void wifisteering(){ //Controlling the motion through wifi
         follow_dist = val;  
         isTrimmer = false;      
       }
-    }
-    else if (followTrim > -1){
+    }else if (followTrim > -1){
       Serial.println("Command = Trimmer ");
       String stat = message.substring(pos_s + 1);
       val = analogRead(trimmer2);
       follow_dist = val/50;
       isTrimmer = true;
-    }
-    else{
+    }else if (ex3 > -1){
+      Serial.println("Command = exercise 3 ");
+      pos_s = message.indexOf(":");
+      exe3();
+    }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
   }
@@ -393,18 +407,16 @@ void loop() {
     lcd.print(" ");
     lcd.print(bigpulsecountright);
   }
-  newDistance = myLIDAR.getDistance();
+  newDistance = myLIDAR.getDistance() - 5;
   if (follow_dist > 0) {
-    if (isTrimmer){
-      if (newDistance+2 < isTrimmer) {go_straight(1);}
-      else if (newDistance-2 > isTrimmer) {go_back(1);}
-      else {return;}
+    if (!isTrimmer){
+      if (newDistance+1 < follow_dist) {go_straight(1);}
+      else if (newDistance-1 > follow_dist) {go_back(1);}
     }
     else {
       follow_dist = analogRead(A2)/50;
-      if (newDistance+2 < follow_dist) {go_straight(1);}
-      else if (newDistance-2 > follow_dist) {go_back(1);}
-      else {return;}
+      if (newDistance+1 < follow_dist) {go_straight(1);}
+      else if (newDistance-1 > follow_dist) {go_back(1);}
     }
   }
   lcd.setCursor(0, 3);
@@ -412,7 +424,6 @@ void loop() {
   lcd.print(newDistance/100);
   lcd.print("m ");
   lcd.print(analogRead(A2)/50);
-  Serial.print(follow_dist);
  /*  lcd.print("Compass = ");
   lcd.print(wiregetdegree());
   lcd.print(" ");
