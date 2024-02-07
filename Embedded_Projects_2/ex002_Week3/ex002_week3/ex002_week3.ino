@@ -182,16 +182,14 @@ int turn_until(float target){ //
   count_reset(); 
   return 0;
 }
-void exe3(){
-  int dist = analogRead(A2)/50;
-  go_back(dist);
-  digitalWrite(Motor_R_dir_pin, Motor_return);
-  while(right_count < (19*14)){ //Move until count and inputed cm match up
-    analogWrite(Motor_R_pwm_pin,255);
+int lidar_dist(cm){
+  int dist = myLIDAR.getDistance();
+  if(cm < dist){
+    go_straight(dist-cm);    
+  }else{
+    go_back(cm-dist);
   }
-  count_reset();
-  analogWrite(Motor_R_pwm_pin,0);
-  go_back(dist);
+  if()
 }
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
@@ -341,17 +339,9 @@ String compdirection(int degree){ //Determine the letters to return with if stat
     return"null";
   }
 }
-/* int area_and_volume(){
-
-} */
 void competition(){
   count_reset();
-  right_turn(90);
-  go_straight(30);
-  left_turn(90);
-  go_straight(40);
-  left_turn(90);
-  go_straight(40);
+  
 }
 
 void setup() { 
@@ -415,10 +405,6 @@ void loop() {
     }
   }
   lcd.setCursor(0, 3);
-/*   lcd.print("Distance: ");
-  lcd.print(newDistance/100);
-  lcd.print("m "); 
-  lcd.print(analogRead(A2)/50);*/
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());
   lcd.print(" ");
