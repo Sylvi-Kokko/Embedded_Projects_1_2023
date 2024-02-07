@@ -185,12 +185,11 @@ int turn_until(float target){ //
 int lidar_dist(cm){
   int dist = myLIDAR.getDistance();
   if(cm < dist){
-    go_straight(dist-cm);    
+    go_straight(dist-cm);
   }else{
     go_back(cm-dist);
-  }
-  if()
 }
+
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -341,7 +340,13 @@ String compdirection(int degree){ //Determine the letters to return with if stat
 }
 void competition(){
   count_reset();
-  
+  lidar_dist(10);
+  right_turn(90);
+  lidar_dist(25);
+  left_turn(90);
+  lidar_dist(33);
+  left_turn(90);
+  lidar_dist(37);
 }
 
 void setup() { 
