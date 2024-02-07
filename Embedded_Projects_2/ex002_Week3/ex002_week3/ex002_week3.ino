@@ -9,8 +9,8 @@
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
 #define CMPS14_address 0x60
-#define Motor_forward         0
-#define Motor_return          1
+#define Motor_forward         1
+#define Motor_return          0
 #define Motor_L_dir_pin       7
 #define Motor_R_dir_pin       8
 #define Motor_L_pwm_pin       9
@@ -38,7 +38,6 @@ float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
 float newDistance;
 
-
 void buttonPressed(){ 
   if (steering_mode){
     steering_mode = false;
@@ -47,12 +46,10 @@ void buttonPressed(){
     steering_mode = true;
   }
 }
-
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
 }
-
 void l_rising(){
   left_count += 1;
   bigpulsecountleft += 1;
@@ -83,7 +80,6 @@ int wiregetdegree(){
   }
   return lcddegree;
 }
-
 //Movement functions 
 int left_turn(int cm){
   digitalWrite(Motor_L_dir_pin, Motor_return); 
@@ -97,7 +93,6 @@ int left_turn(int cm){
   count_reset();
   return 0;
 }
-
 int right_turn(int cm){ //As with left but opposite
   digitalWrite(Motor_R_dir_pin, Motor_return);
   digitalWrite(Motor_L_dir_pin, Motor_forward);
@@ -110,7 +105,6 @@ int right_turn(int cm){ //As with left but opposite
   count_reset();
   return 0;
 }
-
 int go_straight(int cm){
   digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Otherwise same concept as left
@@ -136,7 +130,6 @@ int go_back(int cm){
   count_reset();
   return 0;
 }
-
 int turn_until(float target){ //
   int degree = 361.0;
   Wire.requestFrom(CMPS14_address, 1, true);
@@ -157,9 +150,9 @@ int turn_until(float target){ //
   }
 
   int angleDifference = target - degree; //Calculate the shorter route to the asked for degree
-  if (angleDifference > 180) {
+  if (angleDifference < 180) {
     angleDifference -= 360;
-  } else if (angleDifference < -180) {
+  } else if (angleDifference > -180) {
     angleDifference += 360;
   }
 
@@ -199,7 +192,6 @@ int turn_until(float target){ //
   count_reset(); 
   return 0;
 }
-
 void exe3(){
   int dist = analogRead(A2)/50;
   go_back(dist);
@@ -211,7 +203,6 @@ void exe3(){
   analogWrite(Motor_R_pwm_pin,0);
   go_back(dist);
 }
-
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -227,6 +218,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int followDist = message.indexOf("Follow");
     int followTrim = message.indexOf("Trimmer");
     int ex3 = message.indexOf("ex3");
+    int comp = message.indexOf("Comp");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -277,12 +269,15 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Command = exercise 3 ");
       pos_s = message.indexOf(":");
       exe3();
+    }else if (comp > -1){
+      Serial.println("Command = Competition ");
+      pos_s = message.indexOf(":");
+      competition();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
   }
 }
-
 void joysticksteering(){ //Read the values from the joystick and move the wheels
     val1 = analogRead(analogPin2);
     val2 = analogRead(analogPin1);
@@ -335,7 +330,6 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
     analogWrite(Motor_L_pwm_pin,pwm_L);
     analogWrite(Motor_R_pwm_pin,pwm_R);
 }
-
 String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
   if((degree>=0 && degree < 22.5)||(degree>=337.5)){
     return "N ";
@@ -357,7 +351,18 @@ String compdirection(int degree){ //Determine the letters to return with if stat
     return"null";
   }
 }
+/* int area_and_volume(){
 
+} */
+void competition(){
+  count_reset();
+  right_turn(90);
+  go_straight(30);
+  left_turn(90);
+  go_straight(40);
+  left_turn(90);
+  go_straight(40);
+}
 
 void setup() { 
   Wire.begin();
@@ -420,14 +425,14 @@ void loop() {
     }
   }
   lcd.setCursor(0, 3);
-  lcd.print("Distance: ");
+/*   lcd.print("Distance: ");
   lcd.print(newDistance/100);
-  lcd.print("m ");
-  lcd.print(analogRead(A2)/50);
- /*  lcd.print("Compass = ");
+  lcd.print("m "); 
+  lcd.print(analogRead(A2)/50);*/
+  lcd.print("Compass = ");
   lcd.print(wiregetdegree());
   lcd.print(" ");
-  lcd.print(compdirection(wiregetdegree())); */
+  lcd.print(compdirection(wiregetdegree()));
   delay(100);
   lcd.clear();
 }
