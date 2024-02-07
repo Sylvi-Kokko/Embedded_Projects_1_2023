@@ -82,6 +82,7 @@ int wiregetdegree(){
 }
 //Movement functions 
 int left_turn(int cm){
+  int deg_s = wiregetdegree();
   digitalWrite(Motor_L_dir_pin, Motor_return); 
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
   while(right_count < (cm*1.4)){ //Move until count and inputed cm match up
@@ -91,9 +92,20 @@ int left_turn(int cm){
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
+  int target = deg_s+cm;
+  int deg_f = wiregetdegree();
+  if((deg_s+cm+2 < deg_f ) && (deg_s-2+cm > deg_f)){
+    if(deg_s-2+cm > deg_f){ //For example 200-2+90 = 288 > 280
+      right_turn((target-2)-deg_f);
+    }
+    else if(deg_s+cm+2 < deg_f){ //For example 200+2+90 = 292 < 293
+      left_turn(deg_f-(target+2));
+    }
+  }
   return 0;
 }
 int right_turn(int cm){ //As with left but opposite
+  int deg_s = wiregetdegree();  
   digitalWrite(Motor_R_dir_pin, Motor_return);
   digitalWrite(Motor_L_dir_pin, Motor_forward);
   while(right_count < cm * 1.4){
@@ -103,6 +115,16 @@ int right_turn(int cm){ //As with left but opposite
   analogWrite(Motor_R_pwm_pin,0);
   analogWrite(Motor_L_pwm_pin,0);
   count_reset();
+  int target = deg_s+cm;
+  int deg_f = wiregetdegree();
+  if((deg_s+cm+2 < deg_f ) && (deg_s-2+cm > deg_f)){
+    if(deg_s-2+cm > deg_f){ //For example 200-2+90 = 288 > 280
+      right_turn((target-2)-deg_f);
+    }
+    else if(deg_s+cm+2 < deg_f){ //For example 200+2+90 = 292 < 293
+      left_turn(deg_f-(target+2));
+    }
+  }
   return 0;
 }
 int go_straight(int cm){
@@ -131,23 +153,7 @@ int go_back(int cm){
   return 0;
 }
 int turn_until(float target){ //
-  int degree = 361.0;
-  Wire.requestFrom(CMPS14_address, 1, true);
-    Wire.beginTransmission(CMPS14_address);
-    Wire.write(1);
-    Wire.endTransmission(false);
-  if (Wire.available() >= 1)
-  {
-    byte raw = Wire.read();
-    degree = 0;
-    degree = raw*1.41+ 161.05;
-    degree = degree % 360;
-    if (degree < 0) {
-    degree += 360;
-    }
-  }else{
-    Serial.println("Wire not found");
-  }
+  int degree = wiregetdegree();
 
   int angleDifference = target - degree; //Calculate the shorter route to the asked for degree
   if (angleDifference < 180) {
@@ -169,23 +175,7 @@ int turn_until(float target){ //
     Serial.println(degree);
     analogWrite(Motor_L_pwm_pin,120);
     analogWrite(Motor_R_pwm_pin,120);
-    Wire.requestFrom(CMPS14_address, 1, true);
-    Wire.beginTransmission(CMPS14_address);
-    Wire.write(1);
-    Wire.endTransmission(false);
-  if (Wire.available() >= 1)
-  {
-    byte raw = Wire.read();
-    degree = 0.0;
-    degree = raw*1.41592 + 161.05;
-    degree = degree % 360;
-    if (degree < 0) {
-    degree += 360; 
-    }
-  }else{
-    Serial.println("Wire not found");
-    return 404;
-  }
+    degree = wiregetdegree();
   }
   analogWrite(Motor_L_pwm_pin,0); //Stop the motion
   analogWrite(Motor_R_pwm_pin,0);
@@ -240,7 +230,7 @@ void wifisteering(){ //Controlling the motion through wifi
         if(val < 0){
           right_turn((-1)*val);
         }
-          left_turn(val);
+        else{left_turn(val);}
       }
     }else if (until > -1){ //
       Serial.println("Command = UNTIL ");
