@@ -37,6 +37,8 @@ int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
 float newDistance;
+float encoderCalibrationLeft = 14;
+float encoderCalibrationRight = 14;
 
 void buttonPressed(){ 
   if (steering_mode){
@@ -182,12 +184,46 @@ int turn_until(float target){ //
   count_reset(); 
   return 0;
 }
-int lidar_dist(cm){
+int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
   if(cm < dist){
     go_straight(dist-cm);
   }else{
     go_back(cm-dist);
+}
+if(cm > dist+1 || cm < dist-1) {
+  lidar_dist(cm);
+  }
+}
+
+void measurement(int height){
+  int xpos = myLIDAR.getDistance();
+  Serial.print("xpos=");
+  Serial.print(xpos);
+  right_turn(90);
+  int ypos = myLIDAR.getDistance();
+  Serial.print("ypos=");
+  Serial.print(ypos);
+  right_turn(90);
+  int xneg = myLIDAR.getDistance();
+  Serial.print("xneg=");
+  Serial.print(xneg);
+  right_turn(90);
+  int yneg = myLIDAR.getDistance();
+  Serial.print("yneg=");
+  Serial.print(yneg);
+  float area = (xpos+xneg)*(ypos+yneg);
+  float volume = area*height;
+  lcd.clear();
+  lcd.setCursor(0,1);
+  lcd.print("Area= ");
+  lcd.print(area);
+  lcd.print("cm^2");
+  lcd.setCursor(0, 2);
+  lcd.print("Volume= ");
+  lcd.print(volume);
+  lcd.print("cm^3");
+  delay(6000);
 }
 
 void wifisteering(){ //Controlling the motion through wifi
@@ -204,8 +240,9 @@ void wifisteering(){ //Controlling the motion through wifi
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
     int followTrim = message.indexOf("Trimmer");
-    int ex3 = message.indexOf("ex3");
+    int ex4 = message.indexOf("ex4");
     int comp = message.indexOf("Comp");
+    int measure = message.indexOf("Measure");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -252,14 +289,22 @@ void wifisteering(){ //Controlling the motion through wifi
       val = analogRead(trimmer2);
       follow_dist = val/50;
       isTrimmer = true;
-    }else if (ex3 > -1){
-      Serial.println("Command = exercise 3 ");
+    }else if (measure > -1){
+      Serial.println("Command = Measurement ");
       pos_s = message.indexOf(":");
-      exe3();
+      if (pos_s > -1){
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+      measurement(val);
+      }
     }else if (comp > -1){
       Serial.println("Command = Competition ");
       pos_s = message.indexOf(":");
       competition();
+    }else if (ex4 > -1){
+      Serial.println("Command = Exercise 4 ");
+      pos_s = message.indexOf(":");
+      exe4();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
@@ -349,6 +394,31 @@ void competition(){
   lidar_dist(37);
 }
 
+void exe4(){
+  count_reset();
+  lidar_dist(20);
+  left_turn(90);
+  lidar_dist(25);
+  left_turn(90);
+  lidar_dist(20);
+  left_turn(90);
+  lidar_dist(25);
+  left_turn(90);
+  lidar_dist(20);
+}
+
+void calibrate(){
+  count_reset();
+  lidar_dist(30);
+  int x0 = bigpulsecountright;
+  int y0 = bigpulsecountleft;
+  lidar_dist(10);
+  int x1 = bigpulsecountright;
+  int y1 = bigpulsecountleft;
+  encoderCalibrationRight = (x1-x0)/20;
+  encoderCalibrationLeft = (y1-y0)/20;
+  }
+
 void setup() { 
   Wire.begin();
   pinMode(buttonPin, INPUT);
@@ -373,9 +443,9 @@ void loop() {
     lcd.print("Steerviawifi/serial");
     lcd.setCursor(0, 1);
     lcd.print("DistL/R(cm):");
-    lcd.print(bigpulsecountleft/14);
+    lcd.print(bigpulsecountleft/encoderCalibrationLeft);
     lcd.print(" ");
-    lcd.print(bigpulsecountright/14);
+    lcd.print(bigpulsecountright/encoderCalibrationRight);
     lcd.setCursor(0, 2);
     lcd.print("CountsL/R:" );
     lcd.print(bigpulsecountleft);
