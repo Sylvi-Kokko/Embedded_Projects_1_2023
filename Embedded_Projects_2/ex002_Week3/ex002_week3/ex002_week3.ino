@@ -254,7 +254,6 @@ void measurement(int height){
   delay(6000);
   lcd.clear();
 }
-
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
@@ -433,7 +432,6 @@ void competition(){
   left_turn(90);
   lidar_dist(37);
 }
-
 void exe4(){
   count_reset();  
   lidar_dist(20);
@@ -446,9 +444,9 @@ void exe4(){
   left_turn(90);
   lidar_dist(20);
 }
-
 void calibrate(){
-  int totalPulseR, totalPulseL;
+  int pulsesL_for_1cm[] = [0,0,0,0,0];
+  int pulsesR_for_1cm[] = [0,0,0,0,0];
   encoderCalibrationLeft = 14;
   encoderCalibrationRight = 14;
   count_reset();
