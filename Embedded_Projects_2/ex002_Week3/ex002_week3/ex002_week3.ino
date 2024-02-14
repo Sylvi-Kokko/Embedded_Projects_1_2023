@@ -196,14 +196,23 @@ int turn_until(float target){ //
 int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
   target = wiregetdegree();
-  if(cm < dist){
-    go_straight(dist-cm);
-  }else{
-    go_back(cm-dist);
-}
-if(cm > dist+2 || cm < dist-2) {
-  lidar_dist(cm);
+  while(!(dist == cm)){
+    if(dist > cm){
+      digitalWrite(Motor_L_dir_pin, Motor_forward);
+      digitalWrite(Motor_R_dir_pin, Motor_forward);
+    }
+    else{
+      digitalWrite(Motor_L_dir_pin, Motor_return);
+      digitalWrite(Motor_R_dir_pin, Motor_return);
+    }
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    dist = myLIDAR.getDistance();
   }
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  count_reset();
+  return 0;
 }
 
 void measurement(int height){
