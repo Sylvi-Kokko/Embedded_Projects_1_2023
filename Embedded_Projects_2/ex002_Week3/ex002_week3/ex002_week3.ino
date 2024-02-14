@@ -30,9 +30,12 @@ int st_Y = 503;
 int st_X = 496;
 int left_count = 0;
 int right_count = 0;
+int pulseDistR, pulseDistL;
 const byte buttonPin = 19;
 bool steering_mode = true;
 bool isTrimmer =  false;
+bool correct = false; // Whether to correct heading
+int target; // Sets the correct heading
 int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
@@ -157,11 +160,17 @@ int go_back(int cm){
 int turn_until(float target){ //
   int degree = wiregetdegree();
 
+
+  if(target>360) {
+    target = target-360;    
+  }
+  if(target < 0) {
+    target = target+360;  //Rollover to stay within 0-360
+  }
+
   int angleDifference = target - degree; //Calculate the shorter route to the asked for degree
   if (angleDifference < 180) {
     angleDifference -= 360;
-  } else if (angleDifference > -180) {
-    angleDifference += 360;
   }
 
   if(angleDifference > 0){ //Set the direction of the motors according to the previous calculations 
@@ -186,35 +195,45 @@ int turn_until(float target){ //
 }
 int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
+  target = wiregetdegree();
   if(cm < dist){
     go_straight(dist-cm);
   }else{
     go_back(cm-dist);
 }
-if(cm > dist+1 || cm < dist-1) {
+if(cm > dist+2 || cm < dist-2) {
   lidar_dist(cm);
   }
 }
 
 void measurement(int height){
+  int init = wiregetdegree();
   int xpos = myLIDAR.getDistance();
   Serial.print("xpos=");
   Serial.print(xpos);
-  right_turn(90);
+  turn_until(init+90);
   int ypos = myLIDAR.getDistance();
   Serial.print("ypos=");
   Serial.print(ypos);
-  right_turn(90);
+  turn_until(init+180);
   int xneg = myLIDAR.getDistance();
   Serial.print("xneg=");
   Serial.print(xneg);
-  right_turn(90);
+  turn_until(init+270);
   int yneg = myLIDAR.getDistance();
   Serial.print("yneg=");
   Serial.print(yneg);
   float area = (xpos+xneg)*(ypos+yneg);
   float volume = area*height;
   lcd.clear();
+  Serial.print("xpos=");
+  Serial.print(xpos);
+  Serial.print("ypos=");
+  Serial.print(ypos);
+  Serial.print("xneg=");
+  Serial.print(xneg);
+  Serial.print("yneg=");
+  Serial.print(yneg);
   lcd.setCursor(0,1);
   lcd.print("Area= ");
   lcd.print(area);
@@ -224,6 +243,7 @@ void measurement(int height){
   lcd.print(volume);
   lcd.print("cm^3");
   delay(6000);
+  lcd.clear();
 }
 
 void wifisteering(){ //Controlling the motion through wifi
@@ -242,7 +262,9 @@ void wifisteering(){ //Controlling the motion through wifi
     int followTrim = message.indexOf("Trimmer");
     int ex4 = message.indexOf("ex4");
     int comp = message.indexOf("Comp");
+    int cali = message.indexOf("Calibrate");
     int measure = message.indexOf("Measure");
+    int correction = message.indexOf("Correct");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -282,7 +304,12 @@ void wifisteering(){ //Controlling the motion through wifi
         val = stat.toInt();
         follow_dist = val;  
         isTrimmer = false;      
-      }
+      }      
+    }else if (correction > -1){
+      String stat = message.substring(pos_s +1 );
+      correct != correct;
+      target = wiregetdegree();
+      Serial.println("Command = Correct " + correct);
     }else if (followTrim > -1){
       Serial.println("Command = Trimmer ");
       String stat = message.substring(pos_s + 1);
@@ -301,6 +328,10 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Command = Competition ");
       pos_s = message.indexOf(":");
       competition();
+    }else if (cali > -1){
+      Serial.println("Command = Calibrating ");
+      pos_s = message.indexOf(":");
+      calibrate();
     }else if (ex4 > -1){
       Serial.println("Command = Exercise 4 ");
       pos_s = message.indexOf(":");
@@ -395,9 +426,9 @@ void competition(){
 }
 
 void exe4(){
-  count_reset();
+  count_reset();  
   lidar_dist(20);
-  left_turn(90);
+  turn_until(90);
   lidar_dist(25);
   left_turn(90);
   lidar_dist(20);
@@ -408,15 +439,26 @@ void exe4(){
 }
 
 void calibrate(){
+  int totalPulseR, totalPulseL;
+  encoderCalibrationLeft = 14;
+  encoderCalibrationRight = 14;
   count_reset();
-  lidar_dist(30);
-  int x0 = bigpulsecountright;
-  int y0 = bigpulsecountleft;
-  lidar_dist(10);
-  int x1 = bigpulsecountright;
-  int y1 = bigpulsecountleft;
-  encoderCalibrationRight = (x1-x0)/20;
-  encoderCalibrationLeft = (y1-y0)/20;
+  lidar_dist(40);
+  count_reset();
+  // Code goes here
+  lcd.clear();
+  lcd.setCursor(0,1);
+  lcd.print("EncoderL: ");
+  lcd.print(encoderCalibrationLeft);
+  lcd.setCursor(0, 2);
+  lcd.print("EncoderR: ");
+  lcd.print(encoderCalibrationRight);
+  delay(6000);
+  lcd.clear();
+  Serial.print("EncoderL: "); 
+  Serial.print(encoderCalibrationLeft);
+  Serial.print("EncoderR: "); 
+  Serial.print(encoderCalibrationRight);
   }
 
 void setup() { 
@@ -458,9 +500,9 @@ void loop() {
     lcd.print("Steerviajoystick");
     lcd.setCursor(0, 1);
     lcd.print("DistL/R(cm):");
-    lcd.print(bigpulsecountleft/14);
+    lcd.print(bigpulsecountleft/encoderCalibrationLeft);
     lcd.print(" ");
-    lcd.print(bigpulsecountright/14);
+    lcd.print(bigpulsecountright/encoderCalibrationRight);
     lcd.setCursor(0, 2);
     lcd.print("CountsL/R:" );
     lcd.print(bigpulsecountleft);
@@ -477,6 +519,11 @@ void loop() {
       follow_dist = analogRead(A2)/50;
       if (newDistance+1 < follow_dist) {go_straight(1);}
       else if (newDistance-1 > follow_dist) {go_back(1);}
+    }
+  }
+  if (correct){
+    if(wiregetdegree() != target) {
+      turn_until(target);
     }
   }
   lcd.setCursor(0, 3);
