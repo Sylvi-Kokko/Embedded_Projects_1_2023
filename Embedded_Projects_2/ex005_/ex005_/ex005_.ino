@@ -42,7 +42,7 @@ LIDARLite_v4LED myLIDAR;
 float newDistance;
 float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
-enum State {LEFT, RIGHT, FORWARDS, BACKWARDS, UNTIL, ZERO};
+enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int target;
 int calibration_l[20], calibration_r[20];
@@ -54,6 +54,8 @@ void buttonPressed(){
   else if (!steering_mode){
     steering_mode = true;
   }
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
 }
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
@@ -93,91 +95,58 @@ int wiregetdegree(){
 
 //Movement functions 
 int left_turn(int cm){
-/*   int deg_s = wiregetdegree(); */
+  count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return); 
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
-/*   while(right_count < (cm*1.4)){ //Move until count and inputed cm match up */
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-  }
- /* analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  count_reset();
-  int target = deg_s+cm;
-  int deg_f = wiregetdegree();
-  if((deg_s+cm+2 < deg_f ) && (deg_s-2+cm > deg_f)){
-    if(deg_s-2+cm > deg_f){ //For example 200-2+90 = 288 > 280
-      right_turn((target-2)-deg_f);
-    }
-    else if(deg_s+cm+2 < deg_f){ //For example 200+2+90 = 292 < 293
-      left_turn(deg_f-(target+2));
-    }
-  } */
-  target = cm *1.4;
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  target = cm;
+  movementState = MOVE;
   return 0;
 }
 
 int right_turn(int cm){ //As with left but opposite
-  /* int deg_s = wiregetdegree(); */  
+  count_reset();
   digitalWrite(Motor_R_dir_pin, Motor_return);
   digitalWrite(Motor_L_dir_pin, Motor_forward);
-  /* while(right_count < cm * 1.4){ */
-    analogWrite(Motor_R_pwm_pin,255);
-    analogWrite(Motor_L_pwm_pin,255);
- /*  } */
-  /* analogWrite(Motor_R_pwm_pin,0);
-  analogWrite(Motor_L_pwm_pin,0);
-  count_reset();
-  int target = deg_s+cm;
-  int deg_f = wiregetdegree();
-  if((deg_s+cm+2 < deg_f ) && (deg_s-2+cm > deg_f)){
-    if(deg_s-2+cm > deg_f){ //For example 200-2+90 = 288 > 280
-      right_turn((target-2)-deg_f);
-    }
-    else if(deg_s+cm+2 < deg_f){ //For example 200+2+90 = 292 < 293
-      left_turn(deg_f-(target+2));
-    }
-  } */
-  target = cm*1.4;
+  analogWrite(Motor_R_pwm_pin,255);
+  analogWrite(Motor_L_pwm_pin,255);
+  target = cm;
+  movementState = MOVE;
   return 0;
 }
 int go_straight(int cm){
+  count_reset();  
   digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Otherwise same concept as left
-/*   while(right_count < (cm*14)){ */
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-/*   } */
- /*  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  count_reset(); */
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  target = cm;
+  movementState = MOVE;
   return 0;
 }
 int go_back(int cm){ 
+  count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_return);
-  while(right_count < (cm*14)){
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-    
-  }
-  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  count_reset();
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  target = cm;
+  movementState = MOVE;
   return 0;
 }
-int turn_until(float target){ //
+int turn_until(float targe){ //
   int degree = wiregetdegree();
 
 
-  if(target>360) {
-    target = target-360;    
+  if(targe>360) {
+    targe = target-360;    
   }
-  if(target < 0) {
-    target = target+360;  //Rollover to stay within 0-360
+  if(targe < 0) {
+    targe = target+360;  //Rollover to stay within 0-360
   }
 
-  int angleDifference = target - degree; //Calculate the shorter route to the asked for degree
+  int angleDifference = targe - degree; //Calculate the shorter route to the asked for degree
   if (angleDifference < 180) {
     angleDifference -= 360;
   }
@@ -189,19 +158,13 @@ int turn_until(float target){ //
    digitalWrite(Motor_L_dir_pin, Motor_forward);
   digitalWrite(Motor_R_dir_pin, Motor_return);
   }
-
-  while(!(degree <= target + 1 && degree >= target - 1)){ //Continue to read the compass until target and read degree are +-1 from each other
-    Serial.println(target);
-    Serial.println(degree);
-    analogWrite(Motor_L_pwm_pin,120);
-    analogWrite(Motor_R_pwm_pin,120);
-    degree = wiregetdegree();
-  }
-  analogWrite(Motor_L_pwm_pin,0); //Stop the motion
-  analogWrite(Motor_R_pwm_pin,0);
-  count_reset(); 
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  target = targe;
+  movementState = SPIN;  
   return 0;
 }
+
 int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
   heading = wiregetdegree();
@@ -288,9 +251,9 @@ void wifisteering(){ //Controlling the motion through wifi
         val = stat.toInt(); //Get the int from it
         if(val<0){ //Call the movement function with the correct distance
           go_back((-1)*val);
-          
-        }
+        }else{
           go_straight(val);
+        }
       }
     }else if (turn > -1){ //If turn was called 
       Serial.println("Command = TURN ");
@@ -466,7 +429,7 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print("Steerviawifi/serial");
     lcd.setCursor(0, 1);
-    lcd.print("DistL/R(cm):");
+    lcd.print("Dist(cm):");
     lcd.print(bigpulsecountleft/encoderCalibrationLeft);
     lcd.print(" ");
     lcd.print(bigpulsecountright/encoderCalibrationRight);
@@ -475,6 +438,23 @@ void loop() {
     lcd.print(bigpulsecountleft);
     lcd.print(" ");
     lcd.print(bigpulsecountright);
+    switch(movementState){
+      case MOVE:
+        if(right_count > target*1.4){
+          analogWrite(Motor_L_pwm_pin,0);
+          analogWrite(Motor_R_pwm_pin,0);
+          count_reset();        
+        }
+        break;
+      case SPIN:
+        int degree = wiregetdegree();
+        if(degree <= target + 1 && degree >= target - 1){
+          analogWrite(Motor_L_pwm_pin,0);
+          analogWrite(Motor_R_pwm_pin,0);
+          count_reset();          
+        }
+        break;
+    }  
   }
   else{ //Joystick steering
     joysticksteering();
@@ -491,10 +471,6 @@ void loop() {
     lcd.print(" ");
     lcd.print(bigpulsecountright);
   }
-  switch(movementState){
-    case  
-
-  }  
   newDistance = myLIDAR.getDistance() - 5;
   if (follow_dist > 0) {
     if (!isTrimmer){
