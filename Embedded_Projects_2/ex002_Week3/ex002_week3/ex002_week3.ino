@@ -42,6 +42,7 @@ LIDARLite_v4LED myLIDAR;
 float newDistance;
 float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
+int calibration[20];
 
 void buttonPressed(){ 
   if (steering_mode){
@@ -63,6 +64,7 @@ void r_rising(){
   right_count +=1;
   bigpulsecountright += 1;
 }
+
 //Compass reading
 int wiregetdegree(){
   int lcddegree = 0;
@@ -85,6 +87,7 @@ int wiregetdegree(){
   }
   return lcddegree;
 }
+
 //Movement functions 
 int left_turn(int cm){
   int deg_s = wiregetdegree();
@@ -214,8 +217,7 @@ int lidar_dist(int cm){
   count_reset();
   return 0;
 }
-
-void measurement(int height){
+void measurement(int height){ //Measures lidar distance
   int init = wiregetdegree();
   int xpos = myLIDAR.getDistance();
   Serial.print("xpos=");
@@ -422,7 +424,7 @@ String compdirection(int degree){ //Determine the letters to return with if stat
     return"null";
   }
 }
-void competition(){
+/* void competition(){
   count_reset();
   lidar_dist(10);
   right_turn(90);
@@ -431,8 +433,8 @@ void competition(){
   lidar_dist(33);
   left_turn(90);
   lidar_dist(37);
-}
-void exe4(){
+} */
+/* void exe4(){
   count_reset();  
   lidar_dist(20);
   turn_until(90);
@@ -443,7 +445,7 @@ void exe4(){
   lidar_dist(25);
   left_turn(90);
   lidar_dist(20);
-}
+} */
 void calibrate(){
   int pulsesL_for_1cm[] = [0,0,0,0,0];
   int pulsesR_for_1cm[] = [0,0,0,0,0];
