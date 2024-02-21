@@ -93,16 +93,16 @@ int wiregetdegree(){
   return lcddegree;
 }
 
-void bogus(){
+void lidarPulseFeed(){ //Populates an array with the amount of pulses required to cause 1cm difference in Lidar measurement
   if(myLIDAR.getDistance() == newDistance-1 || myLIDAR.getDistance() == newDistance+1){
   if(arrI == 20){
   arrI = 0;
   }
   int diffPulseL = bigpulsecountleft - oldPulseL;
-  int diffPulseR = bigpulsecountright - oldPulseR;
   oldPulseL = bigpulsecountleft;
-  oldPulseR = bigpulsecountright;
   calibration_l[arrI] = diffPulseL;
+  int diffPulseR = bigpulsecountright - oldPulseR;
+  oldPulseR = bigpulsecountright;
   calibration_r[arrI] = diffPulseR;
   arrI++;
   }
@@ -419,15 +419,15 @@ void exe2(){
 
 void calibrate(){
   float totL=0, totR=0;
-  go_straight(10);
+  go_straight(20);
   for(int i: calibration_r){
     totL += calibration_l[i];
   }
   for(int i: calibration_r){
     totR += calibration_r[i];
   }
-  encoderCalibrationLeft = totL/10;
-  encoderCalibrationRight = totR/10;
+  encoderCalibrationLeft = totL/20;
+  encoderCalibrationRight = totR/20;
   }
 
 void setup() { 
@@ -512,6 +512,7 @@ void loop() {
       turn_until(heading);
     }
   }
+  lidarPulseFeed();
   lcd.setCursor(0, 3);
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());
