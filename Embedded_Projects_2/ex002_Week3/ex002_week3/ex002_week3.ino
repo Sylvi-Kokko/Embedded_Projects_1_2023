@@ -35,7 +35,7 @@ const byte buttonPin = 19;
 bool steering_mode = true;
 bool isTrimmer =  false;
 bool correct = false; // Whether to correct heading
-int target; // Sets the correct heading
+int heading; // Sets the correct heading
 int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
@@ -198,8 +198,8 @@ int turn_until(float target){ //
 }
 int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
-  target = wiregetdegree();
-  while(!(dist == cm)){
+  heading = wiregetdegree();
+  while((dist >= cm+1) || (dist <= cm-1)){
     if(dist > cm){
       digitalWrite(Motor_L_dir_pin, Motor_forward);
       digitalWrite(Motor_R_dir_pin, Motor_forward);
@@ -318,7 +318,7 @@ void wifisteering(){ //Controlling the motion through wifi
     }else if (correction > -1){
       String stat = message.substring(pos_s +1 );
       correct != correct;
-      target = wiregetdegree();
+      heading = wiregetdegree();
       Serial.println("Command = Correct " + correct);
     }else if (followTrim > -1){
       Serial.println("Command = Trimmer ");
@@ -447,14 +447,31 @@ String compdirection(int degree){ //Determine the letters to return with if stat
   lidar_dist(20);
 } */
 void calibrate(){
-  int pulsesL_for_1cm[] = [0,0,0,0,0];
-  int pulsesR_for_1cm[] = [0,0,0,0,0];
+  int pulsesL_for_1cm[] = {0,0,0,0,0};
+  int pulsesR_for_1cm[] = {0,0,0,0,0};
   encoderCalibrationLeft = 14;
   encoderCalibrationRight = 14;
+  int totL, totR;
   count_reset();
   lidar_dist(40);
   count_reset();
-  // Code goes here
+  lidar_dist(38);
+  pulsesL_for_1cm[0] = left_count;
+  count_reset();
+  lidar_dist(36);
+  pulsesL_for_1cm[1] = left_count;
+  count_reset();
+  lidar_dist(34);
+  pulsesL_for_1cm[2] = left_count;
+  count_reset();
+  lidar_dist(32);
+  pulsesL_for_1cm[3] = left_count;
+  count_reset();
+  lidar_dist(30);
+  pulsesL_for_1cm[4] = left_count;
+  count_reset();
+  
+  // Code for math goes here
   lcd.clear();
   lcd.setCursor(0,1);
   lcd.print("EncoderL: ");
@@ -531,8 +548,8 @@ void loop() {
     }
   }
   if (correct){
-    if(wiregetdegree() != target) {
-      turn_until(target);
+    if(wiregetdegree() != heading) {
+      turn_until(heading);
     }
   }
   lcd.setCursor(0, 3);
