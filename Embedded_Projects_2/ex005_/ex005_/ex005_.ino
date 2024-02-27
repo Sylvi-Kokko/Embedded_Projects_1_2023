@@ -25,7 +25,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 int analogPin1 = A0;   
 int analogPin2 = A1;
 int trimmer2 = A2;
-int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;  
+int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft, arrI, oldPulseL, oldPulseR;  
 int st_Y = 503;
 int st_X = 496;
 int left_count = 0;
@@ -91,6 +91,21 @@ int wiregetdegree(){
     return 404;
   }
   return lcddegree;
+}
+
+void lidarPulseFeed(){ //Populates an array with the amount of pulses required to cause 1cm difference in Lidar measurement
+  if(myLIDAR.getDistance() == newDistance-1 || myLIDAR.getDistance() == newDistance+1){
+  if(arrI == 20){
+  arrI = 0;
+  }
+  int diffPulseL = bigpulsecountleft - oldPulseL;
+  oldPulseL = bigpulsecountleft;
+  calibration_l[arrI] = diffPulseL;
+  int diffPulseR = bigpulsecountright - oldPulseR;
+  oldPulseR = bigpulsecountright;
+  calibration_r[arrI] = diffPulseR;
+  arrI++;
+  }
 }
 
 //Movement functions 
@@ -238,7 +253,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
     int followTrim = message.indexOf("Trimmer");
-    int ex4 = message.indexOf("ex4");
+    int ex2 = message.indexOf("ex2");
     int cali = message.indexOf("Calibrate");
     int measure = message.indexOf("Measure");
     int correction = message.indexOf("Correct");
@@ -305,7 +320,7 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Command = Calibrating ");
       pos_s = message.indexOf(":");
       calibrate();
-    }else if (ex4 > -1){
+    }else if (ex2 > -1){
       Serial.println("Command = Exercise 4 ");
       pos_s = message.indexOf(":");
       exe2();
@@ -402,7 +417,16 @@ void exe2(){
 }
 
 void calibrate(){
-  encoderCalibrationLeft = 14;
+  float totL=0, totR=0;
+  go_straight(20);
+  for(int i: calibration_r){
+    totL += calibration_l[i];
+  }
+  for(int i: calibration_r){
+    totR += calibration_r[i];
+  }
+  encoderCalibrationLeft = totL/20;
+  encoderCalibrationRight = totR/20;
   }
 
 void setup() { 
@@ -487,6 +511,7 @@ void loop() {
       turn_until(heading);
     }
   }
+  lidarPulseFeed();
   lcd.setCursor(0, 3);
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());
