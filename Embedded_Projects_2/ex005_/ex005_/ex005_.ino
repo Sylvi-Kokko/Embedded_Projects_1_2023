@@ -164,11 +164,10 @@ int turn_until(float targe){ //
   movementState = SPIN;  
   return 0;
 }
-
 int lidar_dist(int cm){
   int dist = myLIDAR.getDistance();
   heading = wiregetdegree();
-  while((dist >= cm+1) || (dist <= cm-1)){
+  while((dist >= cm+2) || (dist <= cm-2)){
     if(dist > cm){
       digitalWrite(Motor_L_dir_pin, Motor_forward);
       digitalWrite(Motor_R_dir_pin, Motor_forward);
