@@ -45,8 +45,15 @@
 			<button onclick="RET5()">Ret.. 5cm</button>
 
 		<p with id="demo"></p>
+		<br/>
 
-        </div>
+		<span>Distance</span>
+		<span id="from_mega_dist">Loading....</span>
+		<span> cm</span>
+		<br/>
+		<span>Compass</span>
+		<span id="from_mega_deg">Loading....</span>
+	</div>
 
     </div>
 
@@ -132,7 +139,7 @@ $(document).ready(function ()
 
  	function FRW1()
 	{
-  	 document.getElementById("box1").value = "Forw 5 cm";
+  	 document.getElementById("box1").value = "Forw 1 cm";
 	 mode=2;
 	 dist=1;
 	 httpGetAsync(tryme);
@@ -140,7 +147,7 @@ $(document).ready(function ()
 
 	function RET1()
 	{
-  	 document.getElementById("box1").value = "Ret 5 cm";
+  	 document.getElementById("box1").value = "Ret 1 cm";
 	 mode=2;
 	 dist=-1;
 	 httpGetAsync(tryme);
@@ -149,29 +156,16 @@ $(document).ready(function ()
 
 
 
-	function httpGetAsync(callback)
-	 {
-      		  var xmlHttp = new XMLHttpRequest();
-    	 	  xmlHttp.onreadystatechange = function()
-			   {
-    					  	 if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            							 callback(xmlHttp.responseText);
-    		    }
-				if (mode==1) { 	xmlHttp.open("GET",'/?dire='+dire, true); };// true for asynchronous
-    			if (mode==2) {  xmlHttp.open("GET",'/?dist='+dist, true); };// true for asynchronous
-				xmlHttp.send(null);
+	function httpGetAsync(callback){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function(){
+	if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+				callback(xmlHttp.responseText);
 	}
-
-
-
-	function tryme(param1)
-	 {
-
- 	  //		 document.getElementById("box2").value=param1;
-	  	 document.getElementById("demo").value=param1;
-
-	  }
-
+	if (mode==1) { 	xmlHttp.open("GET",'/?dire='+dire, true); };// true for asynchronous
+	if (mode==2) {  xmlHttp.open("GET",'/?dist='+dist, true); };// true for asynchronous
+	xmlHttp.send(null);
+	}
 ///////////////////////////////////////////// JS END
 
     </script>

@@ -33,7 +33,7 @@ AsyncWebServer server(80);
  // Replaces placeholder with LED state value
 String processor(const String& var)
 {
-;  
+return var;
 }
   
 

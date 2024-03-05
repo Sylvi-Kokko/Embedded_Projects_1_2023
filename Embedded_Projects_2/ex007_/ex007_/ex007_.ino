@@ -188,26 +188,22 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
   count_reset();
   return 0;
 }
-<<<<<<< HEAD
-void measurement(int height){ //Measures volume in a space
-=======
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
-LidarVals[i]=myLIDAR.getDistance();
-i++;
-if(i==20){
-  i=0;
-}
-int tot = 0;
-for(int x=0; x<20; x++) {
-  tot += LidarVals[x];
-}
-float LidAvg = tot/20;
-return LidAvg;
+  LidarVals[i]=myLIDAR.getDistance();
+  i++;
+  if(i==20){
+    i=0;
+  }
+  int tot = 0;
+  for(int x=0; x<20; x++) {
+    tot += LidarVals[x];
+  }
+  float LidAvg = tot/20;
+  return LidAvg;
 }
 
-void measurement(int height){ //Measures lidar distance
->>>>>>> 992fc11b961b89cde47b4cfacf8f77e6d059f124
+void measurement(int height){ //Measures volume in a space
   int init = wiregetdegree();
   int xpos = LidarAvg();
   Serial.print("xpos=");
@@ -249,10 +245,10 @@ void measurement(int height){ //Measures lidar distance
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
   lcd.setCursor(0, 0);
-  if (Serial2.available()){
-    String message = Serial.readStringUntil('\n');//Read one line from serial
-    Serial2.print("Message received, content: ");
-    Serial2.println(message); 
+  if (Serial2.available() > -1){
+    String message = Serial2.readStringUntil('\n');//Read one line from serial
+    Serial.print("Message received, content: ");
+    Serial.println(message); 
     int pos_s;
     int poz_z;
     int movement = message.indexOf("Move");
@@ -266,7 +262,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int measure = message.indexOf("Measure");
     int correction = message.indexOf("Correct");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
-      Serial2.println("Command = movement ");
+      Serial1.println("Command = movement ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){ //If the index is bigger than -1 it exists
         String stat = message.substring(pos_s + 1); // Get the string from after the ':'
@@ -278,7 +274,7 @@ void wifisteering(){ //Controlling the motion through wifi
         }
     }
     }else if (turn > -1){ //If turn was called 
-      Serial2.println("Command = TURN ");
+      Serial1.println("Command = TURN ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){ //Same as above but right or left turn is called
         String stat = message.substring(pos_s + 1);
@@ -289,7 +285,7 @@ void wifisteering(){ //Controlling the motion through wifi
         else{left_turn(val);}
       }
     }else if (until > -1){ //
-      Serial2.println("Command = UNTIL ");
+      Serial1.println("Command = UNTIL ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){ //Same as above but turn until is called 
         String stat = message.substring(pos_s + 1);
@@ -297,7 +293,7 @@ void wifisteering(){ //Controlling the motion through wifi
         turn_until(val); 
       }
     }else if (followDist > -1){
-      Serial2.println("Command = Follow ");
+      Serial1.println("Command = Follow ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){
         String stat = message.substring(pos_s + 1);
@@ -309,20 +305,20 @@ void wifisteering(){ //Controlling the motion through wifi
       String stat = message.substring(pos_s +1 );
       correct != correct;
       heading = wiregetdegree();
-      Serial2.println("Command = Correct " + correct);
+      Serial.println("Command = Correct " + correct);
     }else if (followTrim > -1){
-      Serial2.println("Command = Trimmer ");
+      Serial.println("Command = Trimmer ");
       String stat = message.substring(pos_s + 1);
       val = analogRead(trimmer2);
       follow_dist = val/50;
       isTrimmer = true;
     }else if (eeprom > -1){
-      Serial2.println("Command = EepromRead");
+      Serial.println("Command = EepromRead");
       String stat = message.substring(pos_s + 1);
       pos_s = message.indexOf(":");
       eepromRead();
     }else if (measure > -1){
-      Serial2.println("Command = Measurement ");
+      Serial.println("Command = Measurement ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){
         String stat = message.substring(pos_s + 1);
@@ -330,16 +326,19 @@ void wifisteering(){ //Controlling the motion through wifi
       measurement(val);
       }
     }else if (cali > -1){
-      Serial2.println("Command = Calibrating ");
+      Serial.println("Command = Calibrating ");
       pos_s = message.indexOf(":");
       calibrate();
     }else if (ex4 > -1){
-      Serial2.println("Command = Exercise 4 ");
+      Serial.println("Command = Exercise 4 ");
       pos_s = message.indexOf(":");
       exe2();
     }else{
-      Serial2.println("No greeting found, try typing Print:Hi or Print:Hello\n");
+      Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
+  }
+  else{
+    Serial.println("Esp not found");
   }
 }
 void joysticksteering(){ //Read the values from the joystick and move the wheels
