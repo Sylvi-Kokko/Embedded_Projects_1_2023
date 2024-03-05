@@ -252,6 +252,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int pos_s;
     int poz_z;
     int movement = message.indexOf("Move");
+    int eeprom = message.indexOf("eeprom");
     int turn = message.indexOf("Turn");
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
@@ -311,6 +312,11 @@ void wifisteering(){ //Controlling the motion through wifi
       val = analogRead(trimmer2);
       follow_dist = val/50;
       isTrimmer = true;
+    }else if (eeprom > -1){
+      Serial2.println("Command = EepromRead");
+      String stat = message.substring(pos_s + 1);
+      pos_s = message.indexOf(":");
+      eepromRead();
     }else if (measure > -1){
       Serial2.println("Command = Measurement ");
       pos_s = message.indexOf(":");
@@ -432,13 +438,18 @@ void calibrate(){
   if (address == EEPROM.length()) {
     address = 0;
   }
-  byte value = EEPROM.read(address);
+}
 
-  Serial.print(address);
+void eepromRead(){
+  address=0;
+  byte value = EEPROM.read(address);
+  while(address<EEPROM.length()){Serial.print(address);
   Serial.print("\t");
   Serial.print(value, DEC);
-  Serial.println();  
+  Serial.println();
+  address = address+1;
   }
+}
 
 void setup() { 
   Wire.begin();
