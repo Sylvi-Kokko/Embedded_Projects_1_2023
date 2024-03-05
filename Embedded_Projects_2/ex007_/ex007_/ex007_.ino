@@ -164,7 +164,7 @@ int turn_until(float targe){ //
   movementState = SPIN;  
   return 0;
 }
-int lidar_dist(int cm){
+int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
   int dist = myLIDAR.getDistance();
   heading = wiregetdegree();
   while((dist >= cm+2) || (dist <= cm-2)){
@@ -185,7 +185,7 @@ int lidar_dist(int cm){
   count_reset();
   return 0;
 }
-void measurement(int height){ //Measures lidar distance
+void measurement(int height){ //Measures volume in a space
   int init = wiregetdegree();
   int xpos = myLIDAR.getDistance();
   Serial.print("xpos=");
@@ -225,9 +225,9 @@ void measurement(int height){ //Measures lidar distance
   lcd.clear();
 }
 void wifisteering(){ //Controlling the motion through wifi
- val = 0;
-    lcd.setCursor(0, 0);
-     if (Serial2.available() > 0){
+  val = 0;
+  lcd.setCursor(0, 0);
+  if (Serial2.available()){
     String message = Serial.readStringUntil('\n');//Read one line from serial
     Serial2.print("Message received, content: ");
     Serial2.println(message); 
@@ -253,7 +253,7 @@ void wifisteering(){ //Controlling the motion through wifi
         }else{
           go_straight(val);
         }
-      }
+    }
     }else if (turn > -1){ //If turn was called 
       Serial2.println("Command = TURN ");
       pos_s = message.indexOf(":");
