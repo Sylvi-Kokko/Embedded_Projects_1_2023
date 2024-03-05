@@ -8,6 +8,7 @@
 #include <LiquidCrystal.h>
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
+#include <EEPROM.h>
 #define CMPS14_address 0x60
 #define Motor_forward         1
 #define Motor_return          0
@@ -44,7 +45,9 @@ float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
 enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
-int target;
+int target, i=0;
+int address = 0;
+int LidarVals[20];
 int calibration_l[20], calibration_r[20];
 
 void buttonPressed(){ 
@@ -185,21 +188,40 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
   count_reset();
   return 0;
 }
+<<<<<<< HEAD
 void measurement(int height){ //Measures volume in a space
+=======
+
+float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
+LidarVals[i]=myLIDAR.getDistance();
+i++;
+if(i==20){
+  i=0;
+}
+int tot = 0;
+for(int x=0; x<20; x++) {
+  tot += LidarVals[x];
+}
+float LidAvg = tot/20;
+return LidAvg;
+}
+
+void measurement(int height){ //Measures lidar distance
+>>>>>>> 992fc11b961b89cde47b4cfacf8f77e6d059f124
   int init = wiregetdegree();
-  int xpos = myLIDAR.getDistance();
+  int xpos = LidarAvg();
   Serial.print("xpos=");
   Serial.print(xpos);
   turn_until(init+90);
-  int ypos = myLIDAR.getDistance();
+  int ypos = LidarAvg();
   Serial.print("ypos=");
   Serial.print(ypos);
   turn_until(init+180);
-  int xneg = myLIDAR.getDistance();
+  int xneg = LidarAvg();
   Serial.print("xneg=");
   Serial.print(xneg);
   turn_until(init+270);
-  int yneg = myLIDAR.getDistance();
+  int yneg = LidarAvg();
   Serial.print("yneg=");
   Serial.print(yneg);
   float area = (xpos+xneg)*(ypos+yneg);
@@ -234,6 +256,7 @@ void wifisteering(){ //Controlling the motion through wifi
     int pos_s;
     int poz_z;
     int movement = message.indexOf("Move");
+    int eeprom = message.indexOf("eeprom");
     int turn = message.indexOf("Turn");
     int until = message.indexOf("UNTIL");
     int followDist = message.indexOf("Follow");
@@ -293,6 +316,11 @@ void wifisteering(){ //Controlling the motion through wifi
       val = analogRead(trimmer2);
       follow_dist = val/50;
       isTrimmer = true;
+    }else if (eeprom > -1){
+      Serial2.println("Command = EepromRead");
+      String stat = message.substring(pos_s + 1);
+      pos_s = message.indexOf(":");
+      eepromRead();
     }else if (measure > -1){
       Serial2.println("Command = Measurement ");
       pos_s = message.indexOf(":");
@@ -403,7 +431,29 @@ void exe2(){
 
 void calibrate(){
   encoderCalibrationLeft = 14;
+  EEPROM.update(address, encoderCalibrationLeft);
+  address = address + 1;
+  if (address == EEPROM.length()) {
+    address = 0;
   }
+  encoderCalibrationRight = 14;
+  EEPROM.update(address, encoderCalibrationRight);
+  address = address + 1;
+  if (address == EEPROM.length()) {
+    address = 0;
+  }
+}
+
+void eepromRead(){
+  address=0;
+  byte value = EEPROM.read(address);
+  while(address<EEPROM.length()){Serial.print(address);
+  Serial.print("\t");
+  Serial.print(value, DEC);
+  Serial.println();
+  address = address+1;
+  }
+}
 
 void setup() { 
   Wire.begin();
@@ -471,7 +521,7 @@ void loop() {
     lcd.print(" ");
     lcd.print(bigpulsecountright);
   }
-  newDistance = myLIDAR.getDistance() - 5;
+  newDistance = LidarAvg()-5;
   if (follow_dist > 0) {
     if (!isTrimmer){
       if (newDistance+1 < follow_dist) {go_straight(1);}
