@@ -33,7 +33,8 @@ int left_count = 0;
 int right_count = 0;
 int pulseDistR, pulseDistL;
 const byte buttonPin = 19;
-bool steering_mode = true;
+enum steeringState {serial, wifi, joystick};
+steeringState steering_mode = serial;
 bool isTrimmer =  false;
 bool correct = false; // Whether to correct heading
 int heading; // Sets the correct heading
@@ -51,11 +52,14 @@ int LidarVals[20];
 int calibration_l[20], calibration_r[20];
 
 void buttonPressed(){ 
-  if (steering_mode){
-    steering_mode = false;
+  if (steering_mode == wifi){
+    steering_mode = serial;
   }
-  else if (!steering_mode){
-    steering_mode = true;
+  else if (steering_mode == serial){
+    steering_mode = joystick;
+  }
+  else if (steering_mode == joystick){
+    steering_mode = wifi;
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
@@ -242,11 +246,107 @@ void measurement(int height){ //Measures lidar distance
   delay(6000);
   lcd.clear();
 }
+void serialsteering(){
+  val = 0;
+    lcd.setCursor(0, 0);
+     if (Serial.available() > 0){
+    String message = Serial.readStringUntil('\n');//Read one line from serial
+    Serial.print("Message received, content: ");
+    Serial.println(message); 
+    int pos_s;
+    int poz_z;
+    int movement = message.indexOf("Move");
+    int eeprom = message.indexOf("eeprom");
+    int turn = message.indexOf("Turn");
+    int until = message.indexOf("UNTIL");
+    int followDist = message.indexOf("Follow");
+    int followTrim = message.indexOf("Trimmer");
+    int ex4 = message.indexOf("ex4");
+    int cali = message.indexOf("Calibrate");
+    int measure = message.indexOf("Measure");
+    int correction = message.indexOf("Correct");
+    if (movement > -1){ //If the command was movement, index will be bigger than -1
+      Serial.println("Command = movement ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){ //If the index is bigger than -1 it exists
+        String stat = message.substring(pos_s + 1); // Get the string from after the ':'
+        val = stat.toInt(); //Get the int from it
+        if(val<0){ //Call the movement function with the correct distance
+          go_back((-1)*val);
+        }else{
+          go_straight(val);
+        }
+      }
+    }else if (turn > -1){ //If turn was called 
+      Serial.println("Command = TURN ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){ //Same as above but right or left turn is called
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+        if(val < 0){
+          right_turn((-1)*val);
+        }
+        else{left_turn(val);}
+      }
+    }else if (until > -1){ //
+      Serial.println("Command = UNTIL ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){ //Same as above but turn until is called 
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+        turn_until(val); 
+      }
+    }else if (followDist > -1){
+      Serial.println("Command = Follow ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+        follow_dist = val;  
+        isTrimmer = false;      
+      }      
+    }else if (correction > -1){
+      String stat = message.substring(pos_s +1 );
+      correct != correct;
+      heading = wiregetdegree();
+      Serial.println("Command = Correct " + correct);
+    }else if (followTrim > -1){
+      Serial.println("Command = Trimmer ");
+      String stat = message.substring(pos_s + 1);
+      val = analogRead(trimmer2);
+      follow_dist = val/50;
+      isTrimmer = true;
+    }else if (eeprom > -1){
+      Serial.println("Command = EepromRead");
+      String stat = message.substring(pos_s + 1);
+      pos_s = message.indexOf(":");
+      eepromRead();
+    }else if (measure > -1){
+      Serial.println("Command = Measurement ");
+      pos_s = message.indexOf(":");
+      if (pos_s > -1){
+        String stat = message.substring(pos_s + 1);
+        val = stat.toInt();
+      measurement(val);
+      }
+    }else if (cali > -1){
+      Serial.println("Command = Calibrating ");
+      pos_s = message.indexOf(":");
+      calibrate();
+    }else if (ex4 > -1){
+      Serial.println("Command = Exercise 4 ");
+      pos_s = message.indexOf(":");
+      exe2();
+    }else{
+      Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
+    }
+  }
+}
 void wifisteering(){ //Controlling the motion through wifi
  val = 0;
     lcd.setCursor(0, 0);
      if (Serial2.available() > 0){
-    String message = Serial.readStringUntil('\n');//Read one line from serial
+    String message = Serial2.readStringUntil('\n');//Read one line from serial
     Serial2.print("Message received, content: ");
     Serial2.println(message); 
     int pos_s;
@@ -470,10 +570,10 @@ void setup() {
 }
 
 void loop() {
-  if (steering_mode){ //Wifi / Serial steering. Controlled with the button.
+  if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
-    lcd.print("Steerviawifi/serial");
+    lcd.print("Steerviawifi");
     lcd.setCursor(0, 1);
     lcd.print("Dist(cm):");
     lcd.print(bigpulsecountleft/encoderCalibrationLeft);
@@ -502,7 +602,7 @@ void loop() {
         break;
     }  
   }
-  else{ //Joystick steering
+  else if (steering_mode == joystick){ //Joystick steering
     joysticksteering();
     lcd.setCursor(0, 0);
     lcd.print("Steerviajoystick");
@@ -516,6 +616,38 @@ void loop() {
     lcd.print(bigpulsecountleft);
     lcd.print(" ");
     lcd.print(bigpulsecountright);
+  }
+  else { // Serial steering. Controlled with the button.
+    serialsteering();
+    lcd.setCursor(0, 0);
+    lcd.print("Steerviaserial");
+    lcd.setCursor(0, 1);
+    lcd.print("Dist(cm):");
+    lcd.print(bigpulsecountleft/encoderCalibrationLeft);
+    lcd.print(" ");
+    lcd.print(bigpulsecountright/encoderCalibrationRight);
+    lcd.setCursor(0, 2);
+    lcd.print("CountsL/R:" );
+    lcd.print(bigpulsecountleft);
+    lcd.print(" ");
+    lcd.print(bigpulsecountright);
+    switch(movementState){
+      case MOVE:
+        if(right_count > target*1.4){
+          analogWrite(Motor_L_pwm_pin,0);
+          analogWrite(Motor_R_pwm_pin,0);
+          count_reset();        
+        }
+        break;
+      case SPIN:
+        int degree = wiregetdegree();
+        if(degree <= target + 1 && degree >= target - 1){
+          analogWrite(Motor_L_pwm_pin,0);
+          analogWrite(Motor_R_pwm_pin,0);
+          count_reset();          
+        }
+        break;
+    }  
   }
   newDistance = LidarAvg()-5;
   if (follow_dist > 0) {
