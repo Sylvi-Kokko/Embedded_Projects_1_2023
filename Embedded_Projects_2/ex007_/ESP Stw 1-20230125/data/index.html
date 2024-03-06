@@ -63,7 +63,7 @@
 		<br/>
 
 		<span>Distance</span>
-		<span id="from_mega_dist">Loading....</span>
+		<span id="Box_lidar_dist">Loading....</span>
 		<span> cm</span>
 		<br/>
 		<span>Compass</span>
@@ -181,6 +181,18 @@ $(document).ready(function ()
 	if (mode==2) {  xmlHttp.open("GET",'/?dist='+dist, true); };// true for asynchronous
 	xmlHttp.send(null);
 	}
+
+	setInterval(function (){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function(){
+			if(this.readyState==4 && this.status == 200){
+			From_Mega=parseInt(this.responseText);
+			document.getElementById("Box_lidar_dist").innerHTML = From_Mega
+		}
+	};
+	xhttp.open("GET", "/from_Mega", true);
+	xhttp.send();
+},500);
 ///////////////////////////////////////////// JS END
 
     </script>
