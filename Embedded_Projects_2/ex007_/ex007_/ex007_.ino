@@ -46,7 +46,6 @@ float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
 enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
-char buff[];
 int target, i=0;
 int address = 0;
 int LidarVals[20];
@@ -195,13 +194,17 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
 }
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
+int j = 20;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
   if(i==20){
     i=0;
   }
   int tot = 0;
-  for(int x=0; x<20; x++) {
+if (LidarVals[19] == NULL){
+  j=i;
+}
+  for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
   float LidAvg = tot/20;
@@ -210,19 +213,19 @@ float LidarAvg(){ //Gathers lidar information to an array and produces an averag
 
 void measurement(int height){ //Measures volume in a space
   int init = wiregetdegree();
-  int xpos = LidarAvg();
+  int xpos = myLIDAR.getDistance();
   Serial.print("xpos=");
   Serial.print(xpos);
   turn_until(init+90);
-  int ypos = LidarAvg();
+  int ypos = myLIDAR.getDistance();
   Serial.print("ypos=");
   Serial.print(ypos);
   turn_until(init+180);
-  int xneg = LidarAvg();
+  int xneg = myLIDAR.getDistance();
   Serial.print("xneg=");
   Serial.print(xneg);
   turn_until(init+270);
-  int yneg = LidarAvg();
+  int yneg = myLIDAR.getDistance();
   Serial.print("yneg=");
   Serial.print(yneg);
   float area = (xpos+xneg)*(ypos+yneg);
