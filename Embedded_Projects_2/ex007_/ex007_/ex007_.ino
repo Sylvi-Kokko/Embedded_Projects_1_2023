@@ -46,7 +46,6 @@ float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
 enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
-char buff[];
 int target, i=0;
 int address = 0;
 int LidarVals[20];

@@ -120,13 +120,27 @@ void setup()
       
   });
 
-  
+    server.on("/compass.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    request->send(SPIFFS, "/compass.min.js", "text/javascript");
+
+    Serial.println("compass min JS GET ");
+      
+  });
                                                                                   // Route to load style.css file
   server.on("/roundslider.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
   {
     request->send(SPIFFS, "/roundslider.min.css", "text/css");
     
     Serial.println(" min css GET ");
+    
+  });
+
+  server.on("/compass.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    request->send(SPIFFS, "/compass.min.css", "text/css");
+    
+    Serial.println("compass min css GET ");
     
   });
 
