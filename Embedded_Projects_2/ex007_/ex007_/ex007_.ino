@@ -344,98 +344,108 @@ void serialsteering(){
 }
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
-    lcd.setCursor(0, 0);
-     if (Serial2.available() > 0){
-    String message = Serial2.readStringUntil('\n');//Read one line from serial
-    Serial.print("Message received, content: ");
-    Serial.println(message); 
-    int pos_s;
-    int poz_z;
-    int movement = message.indexOf("Move");
-    int eeprom = message.indexOf("eeprom");
-    int turn = message.indexOf("Turn");
-    int until = message.indexOf("UNTIL");
-    int followDist = message.indexOf("Follow");
-    int followTrim = message.indexOf("Trimmer");
-    int ex4 = message.indexOf("ex4");
-    int cali = message.indexOf("Calibrate");
-    int measure = message.indexOf("Measure");
-    int correction = message.indexOf("Correct");
-    if (movement > -1){ //If the command was movement, index will be bigger than -1
-      Serial.println("Command = movement ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){ //If the index is bigger than -1 it exists
-        String stat = message.substring(pos_s + 1); // Get the string from after the ':'
-        val = stat.toInt(); //Get the int from it
-        if(val<0){ //Call the movement function with the correct distance
-          go_back((-1)*val);
-        }else{
-          go_straight(val);
+  lcd.setCursor(0, 0);
+  if (Serial2.available() > 0){
+      Serial.println("Esp available");
+      Serial2.print("Lid=");
+      Serial2.print(LidarAvg()-5);
+      Serial2.print("\n");
+      Serial2.print("Com=");
+      Serial2.print(wiregetdegree());
+      Serial2.print("\n");
+      String message = Serial2.readStringUntil('\n');//Read one line from serial
+      Serial.print("Message received, content: ");
+      Serial.println(message); 
+      int pos_s;
+      int poz_z;
+      int movement = message.indexOf("Move");
+      int eeprom = message.indexOf("eeprom");
+      int turn = message.indexOf("Turn");
+      int until = message.indexOf("UNTIL");
+      int followDist = message.indexOf("Follow");
+      int followTrim = message.indexOf("Trimmer");
+      int ex4 = message.indexOf("ex4");
+      int cali = message.indexOf("Calibrate");
+      int measure = message.indexOf("Measure");
+      int correction = message.indexOf("Correct");
+      if (movement > -1){ //If the command was movement, index will be bigger than -1
+        Serial.println("Command = movement ");
+        pos_s = message.indexOf(":");
+        if (pos_s > -1){ //If the index is bigger than -1 it exists
+          String stat = message.substring(pos_s + 1); // Get the string from after the ':'
+          val = stat.toInt(); //Get the int from it
+          if(val<0){ //Call the movement function with the correct distance
+            go_back((-1)*val);
+          }else{
+            go_straight(val);
+          }
         }
-      }
-    }else if (turn > -1){ //If turn was called 
-      Serial.println("Command = TURN ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){ //Same as above but right or left turn is called
-        String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-        if(val < 0){
-          right_turn((-1)*val);
+      }else if (turn > -1){ //If turn was called 
+        Serial.println("Command = TURN ");
+        pos_s = message.indexOf(":");
+        if (pos_s > -1){ //Same as above but right or left turn is called
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+          if(val < 0){
+            right_turn((-1)*val);
+          }
+          else{left_turn(val);}
         }
-        else{left_turn(val);}
-      }
-    }else if (until > -1){ //
-      Serial.println("Command = UNTIL ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){ //Same as above but turn until is called 
+      }else if (until > -1){ //
+        Serial.println("Command = UNTIL ");
+        pos_s = message.indexOf(":");
+        if (pos_s > -1){ //Same as above but turn until is called 
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+          turn_until(val); 
+        }
+      }else if (followDist > -1){
+        Serial.println("Command = Follow ");
+        pos_s = message.indexOf(":");
+        if (pos_s > -1){
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+          follow_dist = val;  
+          isTrimmer = false;      
+        }      
+      }else if (correction > -1){
+        String stat = message.substring(pos_s +1 );
+        correct != correct;
+        heading = wiregetdegree();
+        Serial.println("Command = Correct " + correct);
+      }else if (followTrim > -1){
+        Serial.println("Command = Trimmer ");
         String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-        turn_until(val); 
-      }
-    }else if (followDist > -1){
-      Serial.println("Command = Follow ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){
+        val = analogRead(trimmer2);
+        follow_dist = val/50;
+        isTrimmer = true;
+      }else if (eeprom > -1){
+        Serial.println("Command = EepromRead");
         String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-        follow_dist = val;  
-        isTrimmer = false;      
-      }      
-    }else if (correction > -1){
-      String stat = message.substring(pos_s +1 );
-      correct != correct;
-      heading = wiregetdegree();
-      Serial.println("Command = Correct " + correct);
-    }else if (followTrim > -1){
-      Serial.println("Command = Trimmer ");
-      String stat = message.substring(pos_s + 1);
-      val = analogRead(trimmer2);
-      follow_dist = val/50;
-      isTrimmer = true;
-    }else if (eeprom > -1){
-      Serial.println("Command = EepromRead");
-      String stat = message.substring(pos_s + 1);
-      pos_s = message.indexOf(":");
-      eepromRead();
-    }else if (measure > -1){
-      Serial.println("Command = Measurement ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){
-        String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-      measurement(val);
+        pos_s = message.indexOf(":");
+        eepromRead();
+      }else if (measure > -1){
+        Serial.println("Command = Measurement ");
+        pos_s = message.indexOf(":");
+        if (pos_s > -1){
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+        measurement(val);
+        }
+      }else if (cali > -1){
+        Serial.println("Command = Calibrating ");
+        pos_s = message.indexOf(":");
+        calibrate();
+      }else if (ex4 > -1){
+        Serial.println("Command = Exercise 4 ");
+        pos_s = message.indexOf(":");
+        exe2();
+      }else{
+        Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
       }
-    }else if (cali > -1){
-      Serial.println("Command = Calibrating ");
-      pos_s = message.indexOf(":");
-      calibrate();
-    }else if (ex4 > -1){
-      Serial.println("Command = Exercise 4 ");
-      pos_s = message.indexOf(":");
-      exe2();
-    }else{
-      Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
-    }
+  }
+  else{
+    //Serial.print("Esp not acknowledged");
   }
 }
 void joysticksteering(){ //Read the values from the joystick and move the wheels

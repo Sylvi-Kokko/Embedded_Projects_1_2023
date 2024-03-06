@@ -151,6 +151,12 @@ void setup()
       request->send_P(200, "text/plain", string_to_JS().c_str());               // return value to web page JS
       
     }); 
+  
+/*   server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+     inputMessage = request->getParam(PARAM_INPUT_1)->value();            
+      
+    });  */
 
 
                                                                                   // Start server

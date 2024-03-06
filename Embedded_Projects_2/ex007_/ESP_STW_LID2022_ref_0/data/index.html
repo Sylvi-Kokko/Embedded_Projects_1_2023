@@ -132,7 +132,7 @@ $(document).ready(function ()
 	// valx=10;
 	 document.getElementById("box1").value=val ;
 	 mode=1;
-	 httpGetAsync(tryme);
+	 httpGetAsync(val);
 	}
 
 
@@ -186,7 +186,8 @@ $(document).ready(function ()
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function(){
 			if(this.readyState==4 && this.status == 200){
-			From_Mega=parseInt(this.responseText);
+			From_Mega=parseInt(this.responseText)
+			console.log(this.responseText)
 			document.getElementById("Box_lidar_dist").innerHTML = From_Mega
 		}
 	};
