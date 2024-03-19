@@ -8,7 +8,6 @@
 	<link href="roundslider.min.css" rel="stylesheet" />
 	<link href="compass.min.css" rel="stylesheet" />
 	<script src="roundslider.min.js"></script>
-	<script src="compass.min.js"></script>
 
 </head>
 
@@ -35,7 +34,7 @@
 		<div id ="allComp">
 			<h1>Compass</h1>
 			<div class="compass">
-				<div class="arrow">
+				<div id="arrow">
 				</div>
 				<div class="disc" id="compassDiscImg"></div>
 			</div>
@@ -85,12 +84,13 @@
 
 		var valx = document.getElementById("rd_slider_1").value;
 
-		/* directioncallback(){
-
-		} */
-
 		document.getElementById("box1").value = 0;
 		document.getElementById("box2").value = 0;
+
+		const compassDisc = document.getElementById('compassDiscImg');
+		compassDisc.style.transform = `rotate(${valx}deg)`;
+		compassDisc.style.webkitTransform = `rotate(${valx}deg)`;
+		compassDisc.style.MozTransform = `rotate(${valx}deg)`;
 
 
 		$(document).ready(function () {
@@ -114,8 +114,8 @@
 							// call type function
 
 							//send_srw_val(args.value);
-							dire = args.value;			 // direction variable set
-							send_srw_val(dire);			 // call type_sl_val
+							dire = args.value;// direction variable set
+							send_srw_val(dire);// call type_sl_val
 
 						}
 
@@ -126,6 +126,12 @@
 
 		});
 
+		function compassrotate(dire){
+			const compassDisc = document.getElementById('arrow');
+			compassDisc.style.transform = `rotate(${dire}deg)`;
+			compassDisc.style.webkitTransform = `rotate(${dire}deg)`;
+			compassDisc.style.MozTransform = `rotate(${dire}deg)`;
+		}
 
 		function send_srw_val(val)		   				 // send stw value
 		{
@@ -133,7 +139,7 @@
 			// valx=10;
 			document.getElementById("box1").value = val;
 			mode = 1;
-			httpGetAsync(directioncallback()); //IMPLEMENT
+			httpGetAsync(); //IMPLEMENT
 		}
 
 
@@ -141,38 +147,36 @@
 			document.getElementById("box2").value = "Forw 5 cm";
 			mode = 2;
 			dist = 5;
-			httpGetAsync(tryme);
+			httpGetAsync();
 		}
 
 		function RET5() {
 			document.getElementById("box2").value = "Ret 5 cm";
 			mode = 2;
 			dist = -5;
-			httpGetAsync(tryme);
+			httpGetAsync();
 		}
 
 		function FRW20() {
 			document.getElementById("box2").value = "Forw 20 cm";
 			mode = 2;
 			dist = 20;
-			httpGetAsync(tryme);
+			httpGetAsync();
 		}
 
 		function RET1() {
 			document.getElementById("box2").value = "Ret 20 cm";
 			mode = 2;
 			dist = -20;
-			httpGetAsync(tryme);
+			httpGetAsync();
 		}
-
-
-
 
 		function httpGetAsync(callback) {
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-					callback(xmlHttp.responseText);
+					/* callback(xmlHttp.responseText); */
+				console.log();
 			}
 			if (mode == 1) { xmlHttp.open("GET", '/?dire=' + dire, true); };// true for asynchronous
 			if (mode == 2) { xmlHttp.open("GET", '/?dist=' + dist, true); };// true for asynchronous
@@ -192,6 +196,7 @@
 					let ival = parseInt(VAL);
 					if (COM == "Com") {
 						document.getElementById("from_mega_deg").innerHTML = ival;
+						compassrotate(ival);
 					}
 					if (COM == "Lid") {
 						document.getElementById("Box_lidar_dist").innerHTML = ival;
