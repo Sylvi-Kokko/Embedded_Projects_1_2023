@@ -1,4 +1,4 @@
-/**
+s/**
 * @file Ex001_Week0.ino
 * @authors Dordze Ostrowski, Sylvi Kokko, Wilhelm Nilsson
 * @brief Project for Embedded Projects course (TAMK, Spring 2024)
@@ -63,19 +63,19 @@ void buttonPressed(){
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
-}
+ }
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
-}
+ }
 void l_rising(){
   left_count += 1;
   bigpulsecountleft += 1;
-}
+ }
 void r_rising(){
   right_count +=1;
   bigpulsecountright += 1;
-}
+ } 
 
 //Compass reading
 int wiregetdegree(){
@@ -98,7 +98,7 @@ int wiregetdegree(){
     return 404;
   }
   return lcddegree;
-}
+ }
 
 //Movement functions 
 int left_turn(int cm){
@@ -110,7 +110,7 @@ int left_turn(int cm){
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 
 int right_turn(int cm){ //As with left but opposite
   count_reset();
@@ -121,7 +121,7 @@ int right_turn(int cm){ //As with left but opposite
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 int go_straight(int cm){
   count_reset();  
   digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
@@ -131,7 +131,7 @@ int go_straight(int cm){
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 int go_back(int cm){ 
   count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return);
@@ -141,7 +141,7 @@ int go_back(int cm){
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 int turn_until(float targe){ //
   int degree = wiregetdegree();
 
@@ -170,7 +170,7 @@ int turn_until(float targe){ //
   target = targe;
   movementState = SPIN;  
   return 0;
-}
+ }
 int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
   int dist = myLIDAR.getDistance();
   heading = wiregetdegree();
@@ -191,25 +191,25 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
   return 0;
-}
+ }
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
-int j = 20;
+ int j = 20;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
   if(i==20){
     i=0;
   }
-  int tot = 0;
-if (LidarVals[19] == NULL){
+ int tot = 0;
+ if (LidarVals[19] == NULL){
   j=i;
-}
+ }
   for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
   float LidAvg = tot/20;
   return LidAvg;
-}
+ }
 
 void measurement(int height){ //Measures volume in a space
   int init = wiregetdegree();
@@ -249,7 +249,7 @@ void measurement(int height){ //Measures volume in a space
   lcd.print("cm^3");
   delay(6000);
   lcd.clear();
-}
+ }
 void serialsteering(){
   val = 0;
     lcd.setCursor(0, 0);
@@ -345,7 +345,7 @@ void serialsteering(){
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
   }
-}
+ }
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
     lcd.setCursor(0, 0);
@@ -433,15 +433,11 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Command = Calibrating ");
       pos_s = message.indexOf(":");
       calibrate();
-    }else if (ex4 > -1){
-      Serial.println("Command = Exercise 4 ");
-      pos_s = message.indexOf(":");
-      exe2();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
   }
-}
+ }
 void joysticksteering(){ //Read the values from the joystick and move the wheels
     val1 = analogRead(analogPin2);
     val2 = analogRead(analogPin1);
@@ -493,7 +489,7 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
     
     analogWrite(Motor_L_pwm_pin,pwm_L);
     analogWrite(Motor_R_pwm_pin,pwm_R);
-}
+ }
 String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
   if((degree>=0 && degree < 22.5)||(degree>=337.5)){
     return "N ";
@@ -514,20 +510,8 @@ String compdirection(int degree){ //Determine the letters to return with if stat
   }else{
     return"null";
   }
-}
+ }
 
-void exe2(){
-  count_reset();  
-  lidar_dist(20);
-  turn_until(90);
-  lidar_dist(25);
-  left_turn(90);
-  lidar_dist(20);
-  left_turn(90);
-  lidar_dist(25);
-  left_turn(90);
-  lidar_dist(20);
-}
 
 void calibrate(){
   encoderCalibrationLeft = 14;
@@ -542,7 +526,7 @@ void calibrate(){
   if (address == EEPROM.length()) {
     address = 0;
   }
-}
+ }
 
 void eepromRead(){
   address=0;
@@ -553,7 +537,7 @@ void eepromRead(){
   Serial.println();
   address = address+1;
   }
-}
+ }
 
 void setup() { 
   Wire.begin();
@@ -571,7 +555,7 @@ void setup() {
     while(1);
   }
   Serial.println("LIDAR acknowledged!");
-}
+ }
 
 void loop() {
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
@@ -656,13 +640,12 @@ void loop() {
   newDistance = LidarAvg()-5;
   if (follow_dist > 0) {
     if (!isTrimmer){
-      if (newDistance+1 < follow_dist) {go_straight(1);}
-      else if (newDistance-1 > follow_dist) {go_back(1);}
+      lidar_dist();
     }
     else {
       follow_dist = analogRead(A2)/50;
-      if (newDistance+1 < follow_dist) {go_straight(1);}
-      else if (newDistance-1 > follow_dist) {go_back(1);}
+      if (newDistance+1 < follow_dist) {go_straight(2);}
+      else if (newDistance-1 > follow_dist) {go_back(2);}
     }
   }
   if (correct){
@@ -677,4 +660,4 @@ void loop() {
   lcd.print(compdirection(wiregetdegree()));
   delay(100);
   lcd.clear();
-}
+ }
