@@ -2,34 +2,29 @@
 <html>
 
 <head>
-	<title>RoundSlider - A sample demo</title>
+	<title>Leego Robotti</title>
 	<script src="jquery-1.11.3.min.js"></script>
-	<link href="index.css" rel="stylesheet" />
+	<link href="index.min.css" rel="stylesheet" />
 	<link href="roundslider.min.css" rel="stylesheet" />
 	<link href="compass.min.css" rel="stylesheet" />
 	<script src="roundslider.min.js"></script>
-
+	<link rel="icon" type="image/x-icon" href="frog.png">
 </head>
 
-<body style="padding: 10px 0 0 20px; font-family: monospace;">
+<body>
 
 	<div class="types">
-		<h3>Steering wheel</h3>
-
 		<div class="container">
+			<h3>Steering wheel</h3>
 			<div class="control">
 				<div id="rd_slider_1"></div>
 				<br />
-
-				change : <div id="range"></div>
-
+			 	<div id="range"></div>
 				<br />
-
 			</div>
-
-			<input id="box1" value="00" />
+			<input id="box1" class="box" value="00" />
 			<br />
-			<input id="box2" value="00" />
+			<input id="box2" class="box" value="00" />
 		</div>
 		<div id ="allComp">
 			<h1>Compass</h1>
@@ -40,31 +35,26 @@
 			</div>
 			<div id="notice"></div>
 		</div>
-
-
-		<br />
-		<br />
-
-		<h3>Drive</h3>
-		<br />
-		<button onclick="FRW20()">Forw 20cm</button>
-		<br />
-		<button onclick="FRW5()">Forw 5cm</button>
-		<br />
-		<br />
-		<button onclick="RET20()">Ret.. 20cm</button>
-		<br />
-		<button onclick="RET5()">Ret.. 5cm</button>
-
-		<p with id="demo"></p>
-		<br />
-
-		<span>Distance</span>
-		<span id="Box_lidar_dist">Loading....</span>
-		<span> cm</span>
-		<br />
-		<span>Compass</span>
-		<span id="from_mega_deg">Loading....</span>
+		<div id ="buttons">
+			<h2>Drive control</h2>
+			<div id="row">
+				<button onclick="FRW20()">Forw 20cm</button>
+				<button onclick="FRW5()">Forw 5cm</button>
+				<button onclick="RET20()">Ret.. 20cm</button>
+				<button onclick="RET5()">Ret.. 5cm</button>
+			</div>
+			<br />
+			<div class = "companddist">
+				<span>Distance</span>
+				<span id="Box_lidar_dist">Loading....</span>
+				<span> cm</span>
+				<br />
+				<span>Compass</span>
+				<span id="from_mega_deg">Loading....</span>
+			</div>
+			<div id="rgbsquare">
+			</div>
+		</div>
 	</div>
 
 	</div>
@@ -133,6 +123,11 @@
 			compassDisc.style.MozTransform = `rotate(${dire}deg)`;
 		}
 
+		function rgbcolor(hex){
+			const square = document.getElementById('rgbsquare');
+			square.style.backgroundColor = `${hex}`;
+		}
+
 		function send_srw_val(val)		   				 // send stw value
 		{
 			// console.log(e.type);
@@ -164,7 +159,7 @@
 			httpGetAsync();
 		}
 
-		function RET1() {
+		function RET20() {
 			document.getElementById("box2").value = "Ret 20 cm";
 			mode = 2;
 			dist = -20;

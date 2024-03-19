@@ -2,14 +2,15 @@
 
 #allComp{
   position:absolute;
-  left:350px;
+  left:400px;
   top: 57px;
 }
 
 h1 {
   position: inherit;
   font-size: 16px;
-  top: -34px;
+  top: -25px;
+  left: 65px;
 }
 
 .compass {
@@ -42,7 +43,4 @@ h1 {
   width: 160px;
   height: 160px;
   background-size: 100%;
-}
-
-#notice {
 }

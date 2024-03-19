@@ -286,10 +286,10 @@ div.rs-block {
   background-color: #fff;
 }
 .rs-range-color {
-  background-color: #54bbe0;
+  background-color: rgb(99, 173, 84);
 }
 .rs-bg-color {
-  background-color: #fff;
+  background-color: rgb(158, 212, 107);
 }
 .rs-handle {
   background-color: #838383;
