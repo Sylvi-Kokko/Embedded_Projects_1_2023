@@ -41,7 +41,7 @@ int heading; // Sets the correct heading
 int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
-float newDistance;
+float newDistance, lidarDist;
 float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
 enum State {MOVE, SPIN, ZERO};
@@ -558,6 +558,7 @@ void setup() {
  }
 
 void loop() {
+  lidarDist = LidarAvg()
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
@@ -637,7 +638,7 @@ void loop() {
         break;
     }  
   }
-  newDistance = LidarAvg()-5;
+  newDistance = lidarDist-5;
   if (follow_dist > 0) {
     if (!isTrimmer){
       lidar_dist();
@@ -653,6 +654,7 @@ void loop() {
       turn_until(heading);
     }
   }
+  lidarDist = LidarAvg();
   lcd.setCursor(0, 3);
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());

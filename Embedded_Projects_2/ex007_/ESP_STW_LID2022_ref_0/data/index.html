@@ -20,7 +20,7 @@
 			<div id="rd_slider_1"></div>
 			<br/>
 
-			 change : <div id="range" </div>
+			 change : <div id="range"></div>
 
 			    			<br/>
 
@@ -32,7 +32,8 @@
 			</div>
 			<h1>Compass</h1>
 <div class="compass">
-  <div class="arrow"></div>
+  <div class="arrow">
+  </div>
   <div class="disc" id="compassDiscImg"></div>
 </div>
 
@@ -63,7 +64,7 @@
 		<br/>
 
 		<span>Distance</span>
-		<span id="Box_lidar_dist">Loading....</span>
+		<span id="Box_lidar_dist">ival</span>
 		<span> cm</span>
 		<br/>
 		<span>Compass</span>
@@ -80,7 +81,7 @@
 
     <script type="text/javascript">
 	///////////////////////////////////// JS start /////////////////////
-
+	var From_Mega=0 // string variable from server/mega
 	var dire=0;		// direction
 	var dist=0;		// distance
 	var mode=0;		// mode 1 = direction value 2=distance vale
@@ -132,7 +133,7 @@ $(document).ready(function ()
 	// valx=10;
 	 document.getElementById("box1").value=val ;
 	 mode=1;
-	 httpGetAsync(tryme);
+	 httpGetAsync(tryme); //IMPLEMENT
 	}
 
 
@@ -174,25 +175,41 @@ $(document).ready(function ()
 	function httpGetAsync(callback){
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function(){
-	if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+	 if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
 				callback(xmlHttp.responseText);
 	}
 	if (mode==1) { 	xmlHttp.open("GET",'/?dire='+dire, true); };// true for asynchronous
 	if (mode==2) {  xmlHttp.open("GET",'/?dist='+dist, true); };// true for asynchronous
 	xmlHttp.send(null);
-	}
+}
 
-	setInterval(function (){
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function(){
-			if(this.readyState==4 && this.status == 200){
-			From_Mega=parseInt(this.responseText);
-			document.getElementById("Box_lidar_dist").innerHTML = From_Mega
+setInterval(function ( )									// timer interval function	 
+  {
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() 
+	{
+      		if (this.readyState == 4 && this.status == 200){
+				let resp=this.responseText; 			//	input string from server c++/MEGA
+				let pos1 = resp.indexOf("=");
+				let COM =resp.substring(0,pos1);
+				let VAL =resp.substring(pos1+1);
+				let ival = parseInt(VAL);
+			if (COM=="Com"){
+				document.getElementById("from_mega_deg").innerHTML = ival;
+			}
+			if (COM=="Lid"){
+				document.getElementById("Box_lidar_dist").innerHTML = ival;
+			}
 		}
 	};
-	xhttp.open("GET", "/from_Mega", true);
-	xhttp.send();
-},500);
+
+    xhttp.open("GET", "/from_MEGA", true);							// request string from server
+
+    xhttp.send();
+
+  }, 500 ) ;											// Interval time 0.5 Sec
+
 ///////////////////////////////////////////// JS END
 
     </script>
