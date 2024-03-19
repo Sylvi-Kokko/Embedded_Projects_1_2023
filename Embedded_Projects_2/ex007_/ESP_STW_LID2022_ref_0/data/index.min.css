@@ -1,0 +1,24 @@
+h1 span {
+    font-size: 0.6em;
+}
+
+.types {
+    display: inline-block;
+    padding: 10px 30px;
+    border: 1px dotted;
+    margin-right: 20px;
+    overflow: hidden;
+}
+
+.container {
+    height: 650px;
+    width: 600px;
+}
+
+.container>div {
+    float: left;
+}
+
+.control {
+    margin-right: 70px;
+}
