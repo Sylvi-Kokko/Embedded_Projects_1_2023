@@ -48,8 +48,8 @@ enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int target, i=0;
 int address = 0;
-int LidarVals[20];
-int calibration_l[20], calibration_r[20];
+int LidarVals[10];
+int calibration_l[10], calibration_r[10];
 
 void buttonPressed(){
   if (steering_mode == wifi){
@@ -229,20 +229,25 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
  }
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
- int j = 20;
+ int j = 10;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
-  if(i==20){
+  if(i==10){
+    i=0;
+  }
+  LidarVals[i]=myLIDAR.getDistance();
+  i++;
+  if(i==10){
     i=0;
   }
  int tot = 0;
- if (LidarVals[19] == NULL){
+ if (LidarVals[9] == NULL){
   j=i;
  }
   for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
-  float LidAvg = tot/20;
+  float LidAvg = tot/10;
   return LidAvg;
  }
 
@@ -548,13 +553,33 @@ String compdirection(int degree){ //Determine the letters to return with if stat
 
 
 void calibrate(){
-  encoderCalibrationLeft = 14;
+  if (LidarAvg() > 30) 
+  {
+    go_straight(LidarAvg()-30);
+    }
+  else {
+  go_back(30-LidarAvg());
+  }
+  for (int z = 0, z<10, z++) {
+  pulseDistR = bigpulsecountright;
+  pulseDistL = bigpulsecountleft;
+  go_straight(2);
+  calibration_l[z] = bigpulsecountleft-pulseDistL;
+  calibration_r[z] = bigpulsecountright-pulseDistR;
+  }
+ for (z=0, z<10, z++) {
+   float totL += calibration_l[z]
+ }
+ for (z=0, z<10, z++) {
+   float totR += calibration_r[z]
+ }
+encoderCalibrationLeft = totL/10;
+encoderCalibrationRight = totR/10 
   EEPROM.update(address, encoderCalibrationLeft);
   address = address + 1;
   if (address == EEPROM.length()) {
     address = 0;
   }
-  encoderCalibrationRight = 14;
   EEPROM.update(address, encoderCalibrationRight);
   address = address + 1;
   if (address == EEPROM.length()) {
