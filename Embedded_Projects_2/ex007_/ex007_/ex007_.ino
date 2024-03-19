@@ -105,8 +105,14 @@ int left_turn(int cm){
   count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
@@ -116,18 +122,35 @@ int right_turn(int cm){ //As with left but opposite
   count_reset();
   digitalWrite(Motor_R_dir_pin, Motor_return);
   digitalWrite(Motor_L_dir_pin, Motor_forward);
-  analogWrite(Motor_R_pwm_pin,255);
-  analogWrite(Motor_L_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
  }
 int go_straight(int cm){
   count_reset();
+  int itterator = 0;
+  while(LidarAvg < 5 && itterator < 6){
+    turn_until(wiregetdegree() + 60);
+    itterator ++;
+  }
   digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Otherwise same concept as left
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
@@ -136,8 +159,14 @@ int go_back(int cm){
   count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
@@ -172,7 +201,7 @@ int turn_until(float targe){ //
   return 0;
  }
 int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
-  int dist = myLIDAR.getDistance();
+  int dist = LidarAvg();
   heading = wiregetdegree();
   while((dist >= cm+2) || (dist <= cm-2)){
     if(dist > cm){
@@ -183,9 +212,15 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
       digitalWrite(Motor_L_dir_pin, Motor_return);
       digitalWrite(Motor_R_dir_pin, Motor_return);
     }
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-    dist = myLIDAR.getDistance();
+    if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+    else{
+      analogWrite(Motor_L_pwm_pin,255);
+      analogWrite(Motor_R_pwm_pin,255);
+    }
+    dist = LidarAvg();
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
