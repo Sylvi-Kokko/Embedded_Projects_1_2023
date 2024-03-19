@@ -47,6 +47,11 @@ h2{
 #box2{
     top:210px;
 }
+img{
+    position: absolute;
+    opacity: 0.3;
+    z-index: -1;
+}
 .types {
     padding: 10px 30px;
     border: 1px dotted;
