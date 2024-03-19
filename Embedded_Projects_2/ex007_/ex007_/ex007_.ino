@@ -1,4 +1,4 @@
-s/**
+/**
 * @file Ex001_Week0.ino
 * @authors Dordze Ostrowski, Sylvi Kokko, Wilhelm Nilsson
 * @brief Project for Embedded Projects course (TAMK, Spring 2024)
@@ -48,8 +48,8 @@ enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int target, i=0;
 int address = 0;
-int LidarVals[20];
-int calibration_l[20], calibration_r[20];
+int LidarVals[10];
+int calibration_l[10], calibration_r[10];
 
 void buttonPressed(){
   if (steering_mode == wifi){
@@ -229,20 +229,25 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
  }
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
- int j = 20;
+ int j = 10;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
-  if(i==20){
+  if(i==10){
+    i=0;
+  }
+  LidarVals[i]=myLIDAR.getDistance();
+  i++;
+  if(i==10){
     i=0;
   }
  int tot = 0;
- if (LidarVals[19] == NULL){
+ if (LidarVals[9] == NULL){
   j=i;
  }
   for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
-  float LidAvg = tot/20;
+  float LidAvg = tot/10;
   return LidAvg;
  }
 
@@ -372,10 +377,6 @@ void serialsteering(){
       Serial.println("Command = Calibrating ");
       pos_s = message.indexOf(":");
       calibrate();
-    }else if (ex4 > -1){
-      Serial.println("Command = Exercise 4 ");
-      pos_s = message.indexOf(":");
-      exe2();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
@@ -548,13 +549,35 @@ String compdirection(int degree){ //Determine the letters to return with if stat
 
 
 void calibrate(){
-  encoderCalibrationLeft = 14;
+  float totL = 0;
+  float totR = 0;
+  if (LidarAvg() > 30) 
+  {
+    go_straight(LidarAvg()-30);
+    }
+  else {
+  go_back(30-LidarAvg());
+  }
+  for (int z = 0; z<10; z++) {
+  pulseDistR = bigpulsecountright;
+  pulseDistL = bigpulsecountleft;
+  go_straight(2);
+  calibration_l[z] = bigpulsecountleft-pulseDistL;
+  calibration_r[z] = bigpulsecountright-pulseDistR;
+  }
+ for (int z=0; z<10; z++) {
+   totL += (calibration_l[z])/2;
+ }
+ for (int z=0; z<10; z++) {
+   totR += (calibration_r[z])/2;
+ }
+encoderCalibrationLeft = totL/10;
+encoderCalibrationRight = totR/10;
   EEPROM.update(address, encoderCalibrationLeft);
   address = address + 1;
   if (address == EEPROM.length()) {
     address = 0;
   }
-  encoderCalibrationRight = 14;
   EEPROM.update(address, encoderCalibrationRight);
   address = address + 1;
   if (address == EEPROM.length()) {
@@ -592,7 +615,7 @@ void setup() {
  }
 
 void loop() {
-  lidarDist = LidarAvg()
+  lidarDist = LidarAvg();
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
@@ -675,7 +698,7 @@ void loop() {
   newDistance = lidarDist-5;
   if (follow_dist > 0) {
     if (!isTrimmer){
-      lidar_dist();
+      lidar_dist(follow_dist);
     }
     else {
       follow_dist = analogRead(A2)/50;
