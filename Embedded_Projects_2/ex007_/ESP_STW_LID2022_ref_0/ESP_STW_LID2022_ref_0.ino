@@ -8,7 +8,7 @@ Lidar reading
 // Import required libraries
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+#include <ESPAsyncWebSrv.h>
 #include <FS.h>
 #include <Wire.h>
 
@@ -216,6 +216,7 @@ void serial_read()                                    // read serial in string, 
 
   }                                                 // while END , End of message  LF
    
-      // Serial.println(buf);
+      Serial.println(buf);
+      
       
 }                                                   // end of serial read
