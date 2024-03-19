@@ -1,3 +1,4 @@
+
 /**
 * @file Ex001_Week0.ino
 * @authors Dordze Ostrowski, Sylvi Kokko, Wilhelm Nilsson
@@ -9,6 +10,7 @@
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
 #include <EEPROM.h>
+#include <DFRobot_TCS34725.h>
 #define CMPS14_address 0x60
 #define Motor_forward         1
 #define Motor_return          0
@@ -50,6 +52,8 @@ int target, i=0;
 int address = 0;
 int LidarVals[10];
 int calibration_l[10], calibration_r[10];
+
+DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void buttonPressed(){
   if (steering_mode == wifi){
@@ -596,6 +600,37 @@ void eepromRead(){
   }
  }
 
+void RGBsensor(){
+  uint16_t clear, red, green, blue;
+  tcs.getRGBC(&red, &green, &blue, &clear);
+  tcs.lock();  
+  Serial.print("C:\t"); 
+  Serial.print(clear);
+  Serial.print("\tR:\t"); 
+  Serial.print(red);
+  Serial.print("\tG:\t"); 
+  Serial.print(green);
+  Serial.print("\tB:\t"); 
+  Serial.print(blue);
+  Serial.println("\t");
+  uint32_t sum = clear;
+  float r, g, b;
+  r = red; 
+  r /= sum;
+  g = green; 
+  g /= sum;
+  b = blue; 
+  b /= sum;
+  r *= 256; 
+  g *= 256; 
+  b *= 256;
+  Serial.print("\t");
+  Serial.print((int)r, HEX); 
+  Serial.print((int)g, HEX); 
+  Serial.print((int)b, HEX);
+  Serial.println();
+}
+
 void setup() {
   Wire.begin();
   pinMode(buttonPin, INPUT);
@@ -609,13 +644,22 @@ void setup() {
   lcd.begin(20, 4);
   if (myLIDAR.begin() == false) {
     Serial.println("Device did not acknowledge! Freezing.");
-    while(1);
+    delay(1000);
   }
   Serial.println("LIDAR acknowledged!");
+  while(!tcs.begin()){
+    Serial.println("No TCS34725 found ... check your connections");
+    delay(1000);
+  }
  }
 
 void loop() {
   lidarDist = LidarAvg();
+  RGBsensor();
+  Serial2.println("dist=");
+  Serial2.print(LidarAvg());
+  Serial2.println("tot_dist=");
+  Serial2.print(((bigpulsecountleft/encoderCalibrationLeft) + (bigpulsecountright/encoderCalibrationRight))/2);
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
