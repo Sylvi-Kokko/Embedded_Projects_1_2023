@@ -650,7 +650,7 @@ void eepromRead(){
   address = address+1;
   }
  }
-
+/* 
 void RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
@@ -681,7 +681,7 @@ void RGBsensor(){
   Serial.print((int)b, HEX);
   Serial.println();
 }
-
+ */
 void setup() {
   Wire.begin();
   pinMode(buttonPin, INPUT);
@@ -698,19 +698,21 @@ void setup() {
     delay(1000);
   }
   Serial.println("LIDAR acknowledged!");
-  while(!tcs.begin()){
+  /* while(!tcs.begin()){
     Serial.println("No TCS34725 found ... check your connections");
     delay(1000);
-  }
+  } */
  }
 
 void loop() {
   lidarDist = LidarAvg();
-  RGBsensor();
-  Serial2.println("dist=");
+  //RGBsensor();
+  Serial2.print("Lid=");
   Serial2.print(LidarAvg());
-  Serial2.println("tot_dist=");
+  Serial2.print("\n");
+  Serial2.print("Dist=");
   Serial2.print(((bigpulsecountleft/encoderCalibrationLeft) + (bigpulsecountright/encoderCalibrationRight))/2);
+  Serial2.print("\n");
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
