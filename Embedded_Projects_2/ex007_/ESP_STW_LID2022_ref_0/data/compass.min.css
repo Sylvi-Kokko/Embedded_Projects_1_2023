@@ -2,8 +2,8 @@
 
 #allComp{
   position:absolute;
-  left:400px;
-  top: 57px;
+  margin-top: -115vh;
+  margin-left: 10%;
 }
 
 h1 {

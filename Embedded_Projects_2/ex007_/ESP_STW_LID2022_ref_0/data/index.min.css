@@ -91,10 +91,9 @@ img{
     border: 2px solid;
     border-radius: 10px;
     width: 400px;
-    margin-left: 10%;
+    margin-left: 10vw;
     padding: 10px;
     text-align: center;
-    margin-left: 40%;
 }
 
 button{
@@ -122,7 +121,7 @@ button:hover {
     position: relative;
     border: 2px solid;
     margin-top: 20px;
-    margin-left: 45%;
+    margin-left: 15vw;
     border-radius: 10px;
     width: 150px;
     height: 150px;

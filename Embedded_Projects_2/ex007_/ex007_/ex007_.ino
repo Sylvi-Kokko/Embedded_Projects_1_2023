@@ -388,11 +388,26 @@ void serialsteering(){
  }
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
+<<<<<<< HEAD
+  lcd.setCursor(0, 0);
+  if (Serial2.available() > 0){
+      Serial.println("Esp available");
+      Serial2.print("Lid=");
+      Serial2.print(LidarAvg()-5);
+      Serial2.print("\n");
+      Serial2.print("Com=");
+      Serial2.print(wiregetdegree());
+      Serial2.print("\n");
+      String message = Serial2.readStringUntil('\n');//Read one line from serial
+      Serial.print("Message received, content: ");
+      Serial.println(message); 
+=======
     lcd.setCursor(0, 0);
     if (Serial2.available() > 0){
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message);
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       int pos_s;
       int poz_z;
       int movement = message.indexOf("Move");
@@ -401,6 +416,10 @@ void wifisteering(){ //Controlling the motion through wifi
       int until = message.indexOf("UNTIL");
       int followDist = message.indexOf("Follow");
       int followTrim = message.indexOf("Trimmer");
+<<<<<<< HEAD
+      int ex4 = message.indexOf("ex4");
+=======
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       int cali = message.indexOf("Calibrate");
       int measure = message.indexOf("Measure");
       int correction = message.indexOf("Correct");
@@ -416,7 +435,11 @@ void wifisteering(){ //Controlling the motion through wifi
             go_straight(val);
           }
         }
+<<<<<<< HEAD
+      }else if (turn > -1){ //If turn was called 
+=======
       }else if (turn > -1){ //If turn was called
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
         Serial.println("Command = TURN ");
         pos_s = message.indexOf(":");
         if (pos_s > -1){ //Same as above but right or left turn is called
@@ -430,10 +453,17 @@ void wifisteering(){ //Controlling the motion through wifi
       }else if (until > -1){ //
         Serial.println("Command = UNTIL ");
         pos_s = message.indexOf(":");
+<<<<<<< HEAD
+        if (pos_s > -1){ //Same as above but turn until is called 
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+          turn_until(val); 
+=======
         if (pos_s > -1){ //Same as above but turn until is called
           String stat = message.substring(pos_s + 1);
           val = stat.toInt();
           turn_until(val);
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
         }
       }else if (followDist > -1){
         Serial.println("Command = Follow ");
@@ -441,9 +471,15 @@ void wifisteering(){ //Controlling the motion through wifi
         if (pos_s > -1){
           String stat = message.substring(pos_s + 1);
           val = stat.toInt();
+<<<<<<< HEAD
+          follow_dist = val;  
+          isTrimmer = false;      
+        }      
+=======
           follow_dist = val;
           isTrimmer = false;
         }
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       }else if (correction > -1){
         String stat = message.substring(pos_s +1 );
         correct != correct;
@@ -472,11 +508,26 @@ void wifisteering(){ //Controlling the motion through wifi
         Serial.println("Command = Calibrating ");
         pos_s = message.indexOf(":");
         calibrate();
+<<<<<<< HEAD
+      }else if (ex4 > -1){
+        Serial.println("Command = Exercise 4 ");
+        pos_s = message.indexOf(":");
+        exe2();
+      }else{
+        Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
+      }
+  }
+  else{
+    //Serial.print("Esp not acknowledged");
+  }
+}
+=======
       }else{
         Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
       }
     }
  }
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
 void joysticksteering(){ //Read the values from the joystick and move the wheels
     val1 = analogRead(analogPin2);
     val2 = analogRead(analogPin1);
