@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Wallpoet");
 
 #allComp{
-  position:absolute;
+  position:relative;
   margin-top: -115vh;
   margin-left: 10%;
 }
@@ -9,8 +9,11 @@
 h1 {
   position: inherit;
   font-size: 16px;
-  top: -25px;
-  left: 65px;
+}
+
+#complabel{
+  top: -23px;
+  left: -53vw;
 }
 
 .compass {

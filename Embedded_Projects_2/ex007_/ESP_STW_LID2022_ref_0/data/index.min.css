@@ -3,6 +3,7 @@ body{
     font-family: monospace;
     background-color: rgb(158, 212, 107);
     color : rgb(34, 82, 28);
+    height: 100vh;
 }
 
 h1 span {
@@ -56,8 +57,10 @@ img{
     padding: 10px 30px;
     border: 1px dotted;
     margin-right: 20px;
-    overflow: hidden;
-    text-align: center
+    overflow-y: scroll;
+    text-align: center;
+    scroll-behavior: smooth;
+    height: 80vh;
 }
 
 .container {
@@ -72,9 +75,9 @@ img{
     left: 55px;
 }
 
+
 #buttons{
     position: relative;
-    top: -290px;
     left: 30px;
     width : 90%;
 }
