@@ -113,14 +113,19 @@ void setup(){
             {
               request->send(SPIFFS, "/index.min.css", "text/css");
 
-              Serial.println("compass min JS GET "); });
+              Serial.println("index min css GET "); });
   // Route to load style.css file
+  server.on("/frog.png", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              request->send(SPIFFS, "/frog.png", "image/png");
+
+              Serial.println(" min css GET "); });
+
   server.on("/roundslider.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               request->send(SPIFFS, "/roundslider.min.css", "text/css");
 
               Serial.println(" min css GET "); });
-
   server.on("/compass.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               request->send(SPIFFS, "/compass.min.css", "text/css");
