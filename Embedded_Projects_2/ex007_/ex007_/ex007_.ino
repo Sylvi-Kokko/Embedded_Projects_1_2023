@@ -401,13 +401,6 @@ void wifisteering(){ //Controlling the motion through wifi
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message); 
-=======
-    lcd.setCursor(0, 0);
-    if (Serial2.available() > 0){
-      String message = Serial2.readStringUntil('\n');//Read one line from serial
-      Serial.print("Message received, content: ");
-      Serial.println(message);
->>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       int pos_s;
       int poz_z;
       int movement = message.indexOf("Move");
