@@ -134,22 +134,16 @@ void setup(){
 
   //  Method GET - query from MEGA to to web page tag is / from_MEGA
   server.on("/from_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
-<<<<<<< HEAD
     {
       request->send_P(200, "text/plain", string_to_JS().c_str());               // return value to web page JS
 
     });
 
-/*   server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
     {
      inputMessage = request->getParam(PARAM_INPUT_1)->value();
 
-    });  */
-=======
-            {
-              request->send_P(200, "text/plain", string_to_JS().c_str()); // return value to web page JS
-            });
->>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
+    });
 
   // Start server
   server.begin();
