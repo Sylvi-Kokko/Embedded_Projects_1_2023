@@ -2,7 +2,7 @@
 
 #allComp{
   position:relative;
-  margin-top: -115vh;
+  margin-top: -90vh;
   margin-left: 10%;
 }
 
@@ -12,8 +12,8 @@ h1 {
 }
 
 #complabel{
-  top: -23px;
-  left: -53vw;
+  top: -20px;
+  left: -58vw;
 }
 
 .compass {
