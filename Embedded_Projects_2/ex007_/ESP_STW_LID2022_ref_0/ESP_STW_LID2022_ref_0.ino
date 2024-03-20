@@ -109,9 +109,9 @@ void setup(){
 
               Serial.println(" min JS GET "); });
 
-  server.on("/compass.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/index.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              request->send(SPIFFS, "/compass.min.js", "text/javascript");
+              request->send(SPIFFS, "/index.min.css", "text/css");
 
               Serial.println("compass min JS GET "); });
   // Route to load style.css file
@@ -132,13 +132,13 @@ void setup(){
 <<<<<<< HEAD
     {
       request->send_P(200, "text/plain", string_to_JS().c_str());               // return value to web page JS
-      
-    }); 
-  
+
+    });
+
 /*   server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
     {
-     inputMessage = request->getParam(PARAM_INPUT_1)->value();            
-      
+     inputMessage = request->getParam(PARAM_INPUT_1)->value();
+
     });  */
 =======
             {
