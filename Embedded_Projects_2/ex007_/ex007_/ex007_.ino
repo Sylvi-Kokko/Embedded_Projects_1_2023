@@ -1,3 +1,4 @@
+
 /**
 * @file Ex001_Week0.ino
 * @authors Dordze Ostrowski, Sylvi Kokko, Wilhelm Nilsson
@@ -9,6 +10,7 @@
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
 #include <EEPROM.h>
+#include <DFRobot_TCS34725.h>
 #define CMPS14_address 0x60
 #define Motor_forward         1
 #define Motor_return          0
@@ -23,10 +25,10 @@
 
 const int rs = 52, en = 53, d4 = 50, d5 = 51, d6 = 49, d7 = 48;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-int analogPin1 = A0;   
+int analogPin1 = A0;
 int analogPin2 = A1;
 int trimmer2 = A2;
-int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;  
+int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;
 int st_Y = 503;
 int st_X = 496;
 int left_count = 0;
@@ -41,17 +43,19 @@ int heading; // Sets the correct heading
 int follow_dist = -1;
 float x_akseli, val1, val2;
 LIDARLite_v4LED myLIDAR;
-float newDistance;
+float newDistance, lidarDist;
 float encoderCalibrationLeft = 14;
 float encoderCalibrationRight = 14;
 enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int target, i=0;
 int address = 0;
-int LidarVals[20];
-int calibration_l[20], calibration_r[20];
+int LidarVals[10];
+int calibration_l[10], calibration_r[10];
 
-void buttonPressed(){ 
+DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+
+void buttonPressed(){
   if (steering_mode == wifi){
     steering_mode = serial;
   }
@@ -63,19 +67,19 @@ void buttonPressed(){
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
-}
+ }
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
-}
+ }
 void l_rising(){
   left_count += 1;
   bigpulsecountleft += 1;
-}
+ }
 void r_rising(){
   right_count +=1;
   bigpulsecountright += 1;
-}
+ }
 
 //Compass reading
 int wiregetdegree(){
@@ -84,70 +88,99 @@ int wiregetdegree(){
     Wire.beginTransmission(CMPS14_address);
     Wire.write(1);
     Wire.endTransmission(false);
-  if (Wire.available() >= 1) 
+  if (Wire.available() >= 1)
   {
     byte raw = Wire.read();
     lcddegree = 0.0;
     lcddegree = raw*1.41592 + 161.05;
     lcddegree = lcddegree % 360;
     if (lcddegree < 0) {
-    lcddegree += 360; 
+    lcddegree += 360;
     }
   }else{
     Serial.println("Wire not foundddd");
     return 404;
   }
   return lcddegree;
-}
+ }
 
-//Movement functions 
+//Movement functions
 int left_turn(int cm){
   count_reset();
-  digitalWrite(Motor_L_dir_pin, Motor_return); 
+  digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 
 int right_turn(int cm){ //As with left but opposite
   count_reset();
   digitalWrite(Motor_R_dir_pin, Motor_return);
   digitalWrite(Motor_L_dir_pin, Motor_forward);
-  analogWrite(Motor_R_pwm_pin,255);
-  analogWrite(Motor_L_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 int go_straight(int cm){
-  count_reset();  
+  count_reset();
+  int itterator = 0;
+  while(LidarAvg < 5 && itterator < 6){
+    turn_until(wiregetdegree() + 60);
+    itterator ++;
+  }
   digitalWrite(Motor_L_dir_pin, Motor_forward); //Wheels move to the same direction
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Otherwise same concept as left
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
-}
-int go_back(int cm){ 
+ }
+int go_back(int cm){
   count_reset();
   digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,255);
-  analogWrite(Motor_R_pwm_pin,255);
+  if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+  else{
+    analogWrite(Motor_L_pwm_pin,255);
+    analogWrite(Motor_R_pwm_pin,255);
+    }
   target = cm;
   movementState = MOVE;
   return 0;
-}
+ }
 int turn_until(float targe){ //
   int degree = wiregetdegree();
 
 
   if(targe>360) {
-    targe = target-360;    
+    targe = target-360;
   }
   if(targe < 0) {
     targe = target+360;  //Rollover to stay within 0-360
@@ -158,7 +191,7 @@ int turn_until(float targe){ //
     angleDifference -= 360;
   }
 
-  if(angleDifference > 0){ //Set the direction of the motors according to the previous calculations 
+  if(angleDifference > 0){ //Set the direction of the motors according to the previous calculations
     digitalWrite(Motor_L_dir_pin, Motor_return);
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   }else{
@@ -168,11 +201,11 @@ int turn_until(float targe){ //
   analogWrite(Motor_L_pwm_pin,255);
   analogWrite(Motor_R_pwm_pin,255);
   target = targe;
-  movementState = SPIN;  
+  movementState = SPIN;
   return 0;
-}
+ }
 int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
-  int dist = myLIDAR.getDistance();
+  int dist = LidarAvg();
   heading = wiregetdegree();
   while((dist >= cm+2) || (dist <= cm-2)){
     if(dist > cm){
@@ -183,45 +216,60 @@ int lidar_dist(int cm){ //Move so that lidar distance is +-2 from input
       digitalWrite(Motor_L_dir_pin, Motor_return);
       digitalWrite(Motor_R_dir_pin, Motor_return);
     }
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-    dist = myLIDAR.getDistance();
+    if(LidarAvg() < 30){
+    analogWrite(Motor_L_pwm_pin,70);
+    analogWrite(Motor_R_pwm_pin,70);
+    }
+    else{
+      analogWrite(Motor_L_pwm_pin,255);
+      analogWrite(Motor_R_pwm_pin,255);
+    }
+    dist = LidarAvg();
   }
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
   count_reset();
   return 0;
-}
+ }
 
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
+ int j = 10;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
-  if(i==20){
+  if(i==10){
     i=0;
   }
-  int tot = 0;
-  for(int x=0; x<20; x++) {
+  LidarVals[i]=myLIDAR.getDistance();
+  i++;
+  if(i==10){
+    i=0;
+  }
+ int tot = 0;
+ if (LidarVals[9] == NULL){
+  j=i;
+ }
+  for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
-  float LidAvg = tot/20;
+  float LidAvg = tot/10;
   return LidAvg;
-}
+ }
 
 void measurement(int height){ //Measures volume in a space
   int init = wiregetdegree();
-  int xpos = LidarAvg();
+  int xpos = myLIDAR.getDistance();
   Serial.print("xpos=");
   Serial.print(xpos);
   turn_until(init+90);
-  int ypos = LidarAvg();
+  int ypos = myLIDAR.getDistance();
   Serial.print("ypos=");
   Serial.print(ypos);
   turn_until(init+180);
-  int xneg = LidarAvg();
+  int xneg = myLIDAR.getDistance();
   Serial.print("xneg=");
   Serial.print(xneg);
   turn_until(init+270);
-  int yneg = LidarAvg();
+  int yneg = myLIDAR.getDistance();
   Serial.print("yneg=");
   Serial.print(yneg);
   float area = (xpos+xneg)*(ypos+yneg);
@@ -245,14 +293,14 @@ void measurement(int height){ //Measures volume in a space
   lcd.print("cm^3");
   delay(6000);
   lcd.clear();
-}
+ }
 void serialsteering(){
   val = 0;
     lcd.setCursor(0, 0);
      if (Serial.available() > 0){
     String message = Serial.readStringUntil('\n');//Read one line from serial
     Serial.print("Message received, content: ");
-    Serial.println(message); 
+    Serial.println(message);
     int pos_s;
     int poz_z;
     int movement = message.indexOf("Move");
@@ -277,7 +325,7 @@ void serialsteering(){
           go_straight(val);
         }
       }
-    }else if (turn > -1){ //If turn was called 
+    }else if (turn > -1){ //If turn was called
       Serial.println("Command = TURN ");
       pos_s = message.indexOf(":");
       if (pos_s > -1){ //Same as above but right or left turn is called
@@ -291,10 +339,10 @@ void serialsteering(){
     }else if (until > -1){ //
       Serial.println("Command = UNTIL ");
       pos_s = message.indexOf(":");
-      if (pos_s > -1){ //Same as above but turn until is called 
+      if (pos_s > -1){ //Same as above but turn until is called
         String stat = message.substring(pos_s + 1);
         val = stat.toInt();
-        turn_until(val); 
+        turn_until(val);
       }
     }else if (followDist > -1){
       Serial.println("Command = Follow ");
@@ -302,9 +350,9 @@ void serialsteering(){
       if (pos_s > -1){
         String stat = message.substring(pos_s + 1);
         val = stat.toInt();
-        follow_dist = val;  
-        isTrimmer = false;      
-      }      
+        follow_dist = val;
+        isTrimmer = false;
+      }
     }else if (correction > -1){
       String stat = message.substring(pos_s +1 );
       correct != correct;
@@ -333,17 +381,14 @@ void serialsteering(){
       Serial.println("Command = Calibrating ");
       pos_s = message.indexOf(":");
       calibrate();
-    }else if (ex4 > -1){
-      Serial.println("Command = Exercise 4 ");
-      pos_s = message.indexOf(":");
-      exe2();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
   }
-}
+ }
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
+<<<<<<< HEAD
   lcd.setCursor(0, 0);
   if (Serial2.available() > 0){
       Serial.println("Esp available");
@@ -356,6 +401,13 @@ void wifisteering(){ //Controlling the motion through wifi
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message); 
+=======
+    lcd.setCursor(0, 0);
+    if (Serial2.available() > 0){
+      String message = Serial2.readStringUntil('\n');//Read one line from serial
+      Serial.print("Message received, content: ");
+      Serial.println(message);
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       int pos_s;
       int poz_z;
       int movement = message.indexOf("Move");
@@ -364,7 +416,10 @@ void wifisteering(){ //Controlling the motion through wifi
       int until = message.indexOf("UNTIL");
       int followDist = message.indexOf("Follow");
       int followTrim = message.indexOf("Trimmer");
+<<<<<<< HEAD
       int ex4 = message.indexOf("ex4");
+=======
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       int cali = message.indexOf("Calibrate");
       int measure = message.indexOf("Measure");
       int correction = message.indexOf("Correct");
@@ -380,7 +435,11 @@ void wifisteering(){ //Controlling the motion through wifi
             go_straight(val);
           }
         }
+<<<<<<< HEAD
       }else if (turn > -1){ //If turn was called 
+=======
+      }else if (turn > -1){ //If turn was called
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
         Serial.println("Command = TURN ");
         pos_s = message.indexOf(":");
         if (pos_s > -1){ //Same as above but right or left turn is called
@@ -394,10 +453,17 @@ void wifisteering(){ //Controlling the motion through wifi
       }else if (until > -1){ //
         Serial.println("Command = UNTIL ");
         pos_s = message.indexOf(":");
+<<<<<<< HEAD
         if (pos_s > -1){ //Same as above but turn until is called 
           String stat = message.substring(pos_s + 1);
           val = stat.toInt();
           turn_until(val); 
+=======
+        if (pos_s > -1){ //Same as above but turn until is called
+          String stat = message.substring(pos_s + 1);
+          val = stat.toInt();
+          turn_until(val);
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
         }
       }else if (followDist > -1){
         Serial.println("Command = Follow ");
@@ -405,9 +471,15 @@ void wifisteering(){ //Controlling the motion through wifi
         if (pos_s > -1){
           String stat = message.substring(pos_s + 1);
           val = stat.toInt();
+<<<<<<< HEAD
           follow_dist = val;  
           isTrimmer = false;      
         }      
+=======
+          follow_dist = val;
+          isTrimmer = false;
+        }
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
       }else if (correction > -1){
         String stat = message.substring(pos_s +1 );
         correct != correct;
@@ -436,6 +508,7 @@ void wifisteering(){ //Controlling the motion through wifi
         Serial.println("Command = Calibrating ");
         pos_s = message.indexOf(":");
         calibrate();
+<<<<<<< HEAD
       }else if (ex4 > -1){
         Serial.println("Command = Exercise 4 ");
         pos_s = message.indexOf(":");
@@ -448,28 +521,35 @@ void wifisteering(){ //Controlling the motion through wifi
     //Serial.print("Esp not acknowledged");
   }
 }
+=======
+      }else{
+        Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
+      }
+    }
+ }
+>>>>>>> e67d465c8522e498bc34d2c9c0f1ba35c6fc854c
 void joysticksteering(){ //Read the values from the joystick and move the wheels
     val1 = analogRead(analogPin2);
     val2 = analogRead(analogPin1);
-    val2 = val2 + 15.5; //The joystick is a bit off so these correct it to 0 
+    val2 = val2 + 15.5; //The joystick is a bit off so these correct it to 0
     val1 = val1 + 7.5;
     x_pwm = map(val2, 0, 1023, -90, 90);
     y_pwm = map(val1, 0, 1023, -160, 160);
-    if((val1 < 509.5)){ //Go backwards 
+    if((val1 < 509.5)){ //Go backwards
       dir_L = 1; //Set the direction
       dir_R = 1;
       if(x_pwm < -1){
-        pwm_L = -1*x_pwm + abs(y_pwm); //Set the power by combining both axes 
+        pwm_L = -1*x_pwm + abs(y_pwm); //Set the power by combining both axes
         pwm_R = x_pwm + abs(y_pwm);
       }else{
         pwm_L = -1*x_pwm + abs(y_pwm);
         pwm_R = x_pwm + abs(y_pwm);
       }
-      
+
     }
     else if ((val1 > 513.5)){ //Same as above but the opposite direction
       dir_L = 0;
-      dir_R = 0; 
+      dir_R = 0;
       if(x_pwm < -1){
         pwm_L = -1*x_pwm + abs(y_pwm);
         pwm_R = x_pwm + abs(y_pwm);
@@ -478,28 +558,28 @@ void joysticksteering(){ //Read the values from the joystick and move the wheels
         pwm_R = x_pwm + abs(y_pwm);
       }
     }else{ //If the y is close enough to middle, just turn left or right
-      if(x_pwm > 2){ 
+      if(x_pwm > 2){
       dir_L = 0; //Opposite directions make for more efficient turning
       dir_R = 1;
       pwm_L = -x_pwm; //When just turning, the power from x axis is enough
-      pwm_R = x_pwm; 
+      pwm_R = x_pwm;
       }else if(x_pwm < -2){
       dir_L = 1;
       dir_R = 0;
       pwm_L = x_pwm;
       pwm_R = -x_pwm;
       }else{
-      pwm_L = 0; 
+      pwm_L = 0;
       pwm_R = 0;
       }
-      
+
     }
     digitalWrite(Motor_L_dir_pin, dir_L); //Here the values for direction and speed are actually sent to the motors
     digitalWrite(Motor_R_dir_pin, dir_R);
-    
+
     analogWrite(Motor_L_pwm_pin,pwm_L);
     analogWrite(Motor_R_pwm_pin,pwm_R);
-}
+ }
 String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
   if((degree>=0 && degree < 22.5)||(degree>=337.5)){
     return "N ";
@@ -520,35 +600,45 @@ String compdirection(int degree){ //Determine the letters to return with if stat
   }else{
     return"null";
   }
-}
+ }
 
-void exe2(){
-  count_reset();  
-  lidar_dist(20);
-  turn_until(90);
-  lidar_dist(25);
-  left_turn(90);
-  lidar_dist(20);
-  left_turn(90);
-  lidar_dist(25);
-  left_turn(90);
-  lidar_dist(20);
-}
 
 void calibrate(){
-  encoderCalibrationLeft = 14;
+  float totL = 0;
+  float totR = 0;
+  if (LidarAvg() > 30) 
+  {
+    go_straight(LidarAvg()-30);
+    }
+  else {
+  go_back(30-LidarAvg());
+  }
+  for (int z = 0; z<10; z++) {
+  pulseDistR = bigpulsecountright;
+  pulseDistL = bigpulsecountleft;
+  go_straight(2);
+  calibration_l[z] = bigpulsecountleft-pulseDistL;
+  calibration_r[z] = bigpulsecountright-pulseDistR;
+  }
+ for (int z=0; z<10; z++) {
+   totL += (calibration_l[z])/2;
+ }
+ for (int z=0; z<10; z++) {
+   totR += (calibration_r[z])/2;
+ }
+encoderCalibrationLeft = totL/10;
+encoderCalibrationRight = totR/10;
   EEPROM.update(address, encoderCalibrationLeft);
   address = address + 1;
   if (address == EEPROM.length()) {
     address = 0;
   }
-  encoderCalibrationRight = 14;
   EEPROM.update(address, encoderCalibrationRight);
   address = address + 1;
   if (address == EEPROM.length()) {
     address = 0;
   }
-}
+ }
 
 void eepromRead(){
   address=0;
@@ -559,12 +649,43 @@ void eepromRead(){
   Serial.println();
   address = address+1;
   }
+ }
+
+void RGBsensor(){
+  uint16_t clear, red, green, blue;
+  tcs.getRGBC(&red, &green, &blue, &clear);
+  tcs.lock();  
+  Serial.print("C:\t"); 
+  Serial.print(clear);
+  Serial.print("\tR:\t"); 
+  Serial.print(red);
+  Serial.print("\tG:\t"); 
+  Serial.print(green);
+  Serial.print("\tB:\t"); 
+  Serial.print(blue);
+  Serial.println("\t");
+  uint32_t sum = clear;
+  float r, g, b;
+  r = red; 
+  r /= sum;
+  g = green; 
+  g /= sum;
+  b = blue; 
+  b /= sum;
+  r *= 256; 
+  g *= 256; 
+  b *= 256;
+  Serial.print("\t");
+  Serial.print((int)r, HEX); 
+  Serial.print((int)g, HEX); 
+  Serial.print((int)b, HEX);
+  Serial.println();
 }
 
-void setup() { 
+void setup() {
   Wire.begin();
   pinMode(buttonPin, INPUT);
-  pinMode(Encoder_Int4, INPUT);  
+  pinMode(Encoder_Int4, INPUT);
   pinMode(Encoder_Int5, INPUT);
   attachInterrupt(digitalPinToInterrupt(19), buttonPressed, FALLING); //Detects button being pressed
   attachInterrupt(digitalPinToInterrupt(2), r_rising, RISING); //Detects right wheel rotation
@@ -574,12 +695,22 @@ void setup() {
   lcd.begin(20, 4);
   if (myLIDAR.begin() == false) {
     Serial.println("Device did not acknowledge! Freezing.");
-    while(1);
+    delay(1000);
   }
   Serial.println("LIDAR acknowledged!");
-}
+  while(!tcs.begin()){
+    Serial.println("No TCS34725 found ... check your connections");
+    delay(1000);
+  }
+ }
 
 void loop() {
+  lidarDist = LidarAvg();
+  RGBsensor();
+  Serial2.println("dist=");
+  Serial2.print(LidarAvg());
+  Serial2.println("tot_dist=");
+  Serial2.print(((bigpulsecountleft/encoderCalibrationLeft) + (bigpulsecountright/encoderCalibrationRight))/2);
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
@@ -599,7 +730,7 @@ void loop() {
         if(right_count > target*1.4){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
-          count_reset();        
+          count_reset();
         }
         break;
       case SPIN:
@@ -607,10 +738,10 @@ void loop() {
         if(degree <= target + 1 && degree >= target - 1){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
-          count_reset();          
+          count_reset();
         }
         break;
-    }  
+    }
   }
   else if (steering_mode == joystick){ //Joystick steering
     joysticksteering();
@@ -646,7 +777,7 @@ void loop() {
         if(right_count > target*1.4){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
-          count_reset();        
+          count_reset();
         }
         break;
       case SPIN:
@@ -654,21 +785,20 @@ void loop() {
         if(degree <= target + 1 && degree >= target - 1){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
-          count_reset();          
+          count_reset();
         }
         break;
-    }  
+    }
   }
-  newDistance = LidarAvg()-5;
+  newDistance = lidarDist-5;
   if (follow_dist > 0) {
     if (!isTrimmer){
-      if (newDistance+1 < follow_dist) {go_straight(1);}
-      else if (newDistance-1 > follow_dist) {go_back(1);}
+      lidar_dist(follow_dist);
     }
     else {
       follow_dist = analogRead(A2)/50;
-      if (newDistance+1 < follow_dist) {go_straight(1);}
-      else if (newDistance-1 > follow_dist) {go_back(1);}
+      if (newDistance+1 < follow_dist) {go_straight(2);}
+      else if (newDistance-1 > follow_dist) {go_back(2);}
     }
   }
   if (correct){
@@ -676,6 +806,7 @@ void loop() {
       turn_until(heading);
     }
   }
+  lidarDist = LidarAvg();
   lcd.setCursor(0, 3);
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());
@@ -683,4 +814,4 @@ void loop() {
   lcd.print(compdirection(wiregetdegree()));
   delay(100);
   lcd.clear();
-}
+ }
