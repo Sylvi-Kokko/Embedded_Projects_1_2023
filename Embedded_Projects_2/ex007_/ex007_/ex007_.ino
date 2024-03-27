@@ -392,6 +392,7 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Esp available");
       Serial2.println("Lid="+String(LidarAvg()-5));
       Serial2.println("Com="+String(wiregetdegree()));
+      Serial2.println("RGB="+String())
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message); 
@@ -601,7 +602,7 @@ void eepromRead(){
   address = address+1;
   }
  }
-/*
+
 void RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
@@ -630,9 +631,10 @@ void RGBsensor(){
   Serial.print((int)r, HEX);
   Serial.print((int)g, HEX);
   Serial.print((int)b, HEX);
-  Serial.println();
+  String hexString = String((int)r, HEX) + String((int)g, HEX) + String((int)b, HEX);
+  Serial2.println(hexString);
 }
- */
+
 void setup() {
   Wire.begin();
   pinMode(buttonPin, INPUT);
@@ -649,15 +651,15 @@ void setup() {
     delay(1000);
   }
   Serial.println("LIDAR acknowledged!");
-  /* while(!tcs.begin()){
+  while(!tcs.begin()){
     Serial.println("No TCS34725 found ... check your connections");
     delay(1000);
-  } */
+  }
  }
 
 void loop() {
   lidarDist = LidarAvg();
-  //RGBsensor();
+  RGBsensor();
   Serial2.print("Lid=");
   Serial2.print(LidarAvg());
   Serial2.print("\n");
