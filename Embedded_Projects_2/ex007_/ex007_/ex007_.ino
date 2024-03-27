@@ -577,18 +577,18 @@ void calibrate(){
  for (int z=0; z<10; z++) {
    totR += (calibration_r[z])/2;
  }
-encoderCalibrationLeft = totL/10;
-encoderCalibrationRight = totR/10;
-  EEPROM.update(address, encoderCalibrationLeft);
-  address = address + 1;
-  if (address == EEPROM.length()) {
-    address = 0;
-  }
-  EEPROM.update(address, encoderCalibrationRight);
-  address = address + 1;
-  if (address == EEPROM.length()) {
-    address = 0;
-  }
+  encoderCalibrationLeft = totL/10;
+  encoderCalibrationRight = totR/10;
+    EEPROM.update(address, encoderCalibrationLeft);
+    address = address + 1;
+    if (address == EEPROM.length()) {
+      address = 0;
+    }
+    EEPROM.update(address, encoderCalibrationRight);
+    address = address + 1;
+    if (address == EEPROM.length()) {
+      address = 0;
+    }
  }
 
 void eepromRead(){
