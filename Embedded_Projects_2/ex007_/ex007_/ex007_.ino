@@ -632,8 +632,12 @@ String RGBsensor(){
   Serial.print((int)g, HEX);
   Serial.print((int)b, HEX);
   String hexString = String((int)r, HEX) + String((int)g, HEX) + String((int)b, HEX);
+<<<<<<< HEAD
   Serial2.println(hexString);
   return 
+=======
+  Serial2.println("RGB="+hexString);
+>>>>>>> 02bf8c9a46d008482d1f9b25f5bef331183a7c94
 }
 
 void setup() {
