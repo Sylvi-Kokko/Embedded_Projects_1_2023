@@ -392,7 +392,6 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Esp available");
       Serial2.println("Lid="+String(LidarAvg()-5));
       Serial2.println("Com="+String(wiregetdegree()));
-      Serial2.println("RGB="+String())
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message); 
@@ -632,7 +631,7 @@ void RGBsensor(){
   Serial.print((int)g, HEX);
   Serial.print((int)b, HEX);
   String hexString = String((int)r, HEX) + String((int)g, HEX) + String((int)b, HEX);
-  Serial2.println(hexString);
+  Serial2.println("RGB="+hexString);
 }
 
 void setup() {
