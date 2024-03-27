@@ -392,7 +392,7 @@ void wifisteering(){ //Controlling the motion through wifi
       Serial.println("Esp available");
       Serial2.println("Lid="+String(LidarAvg()-5));
       Serial2.println("Com="+String(wiregetdegree()));
-      Serial2.println("RGB="+String())
+      Serial2.println("RGB="+String());
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
       Serial.println(message); 
@@ -603,7 +603,7 @@ void eepromRead(){
   }
  }
 
-void RGBsensor(){
+String RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
   tcs.lock();
@@ -633,6 +633,7 @@ void RGBsensor(){
   Serial.print((int)b, HEX);
   String hexString = String((int)r, HEX) + String((int)g, HEX) + String((int)b, HEX);
   Serial2.println(hexString);
+  return 
 }
 
 void setup() {
@@ -729,7 +730,7 @@ void loop() {
     lcd.print(bigpulsecountright);
     switch(movementState){
       case MOVE:
-        if(right_count > target*1.4){
+        if((right_count > target*1.4) || ()){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
           count_reset();
