@@ -101,7 +101,11 @@ void setup(){
               request->send(SPIFFS, "/jquery-1.11.3.min.js", "text/javascript");
 
               Serial.println(" JS jquery GET "); });
+  server.on("/index.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                request->send(SPIFFS, "/index.min.css", "text/css");
 
+                Serial.println("index min css GET "); });
   // Route to load style.css file
   server.on("/roundslider.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -109,11 +113,6 @@ void setup(){
 
               Serial.println(" min JS GET "); });
 
-  server.on("/index.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              request->send(SPIFFS, "/index.min.css", "text/css");
-
-              Serial.println("index min css GET "); });
   // Route to load style.css file
   server.on("/frog.png", HTTP_GET, [](AsyncWebServerRequest *request)
             {
