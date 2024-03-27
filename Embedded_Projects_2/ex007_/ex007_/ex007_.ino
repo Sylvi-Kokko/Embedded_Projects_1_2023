@@ -387,11 +387,14 @@ void serialsteering(){
  }
 void wifisteering(){ //Controlling the motion through wifi
   val = 0;
-    lcd.setCursor(0, 0);
-    if (Serial2.available() > 0){
+  lcd.setCursor(0, 0);
+  if (Serial2.available() > 0){
+      Serial.println("Esp available");
+      Serial2.println("Lid="+String(LidarAvg()-5));
+      Serial2.println("Com="+String(wiregetdegree()));
       String message = Serial2.readStringUntil('\n');//Read one line from serial
       Serial.print("Message received, content: ");
-      Serial.println(message);
+      Serial.println(message); 
       int pos_s;
       int poz_z;
       int movement = message.indexOf("Move");

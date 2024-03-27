@@ -118,7 +118,13 @@ void setup(){
             {
               request->send(SPIFFS, "/frog.png", "image/png");
 
-              Serial.println(" min css GET "); });
+              Serial.println("Frog picture GET "); });
+
+  server.on("/frog.png", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              request->send(SPIFFS, "/frog.png", "image/x-icon");
+
+              Serial.println("Frog favicon GET "); });
 
   server.on("/roundslider.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -138,11 +144,10 @@ void setup(){
 
     });
 
-  server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
+ /*  server.on("/to_MEGA", HTTP_GET, [](AsyncWebServerRequest *request)
     {
      inputMessage = request->getParam(PARAM_INPUT_1)->value();
-
-    });
+    });*/
 
   // Start server
   server.begin();
@@ -153,7 +158,7 @@ void setup(){
 String processor(const String &var)
 {
   Serial.println(var);
-  //What needs to happen here theoretically
+  return var;
 
 }
 
