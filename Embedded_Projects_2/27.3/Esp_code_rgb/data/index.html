@@ -129,7 +129,8 @@
 
 		function rgb_color(hex){
 			const square = document.getElementById('rgbsquare');
-			square.style.backgroundColor = `${hex}`;
+			square.style.backgroundColor = `#${hex}`;
+			console.log("RGB color updates");
 		}
 
 		function obstacle_warning(){
@@ -228,7 +229,7 @@
 					if (COM == "Lid") {
 						document.getElementById("Box_lidar_dist").innerHTML = ival;
 					}
-					if(COM == "rgb"){
+					if(COM == "RGB"){
 						rgb_color(ival);
 					}
 				}
