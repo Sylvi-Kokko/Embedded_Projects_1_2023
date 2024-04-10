@@ -28,7 +28,7 @@ int right_count = 0;
 int pulseDistR, pulseDistL;
 const byte buttonPin = 19;
 float x_akseli, val1, val2;
-int i = 0, lidarDist;
+int i = 0, lidarDist, iterator = 0;
 enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int heading; // Sets the correct heading
@@ -245,18 +245,19 @@ void pass(){
   analogWrite(Motor_L_pwm_pin,75);
   analogWrite(Motor_R_pwm_pin,150);
   while(true){
-    if(right_count > 22*1.4){
+    if(LidarAvg() > 15){
     count_reset();
+    analogWrite(Motor_L_pwm_pin,75);
+    analogWrite(Motor_R_pwm_pin,75);
     turn_until();
     digitalWrite(Motor_L_dir_pin, Motor_forward);
     digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
     analogWrite(Motor_L_pwm_pin,255);
     analogWrite(Motor_R_pwm_pin,255);
-      if(right_count > 22*1.4 || LidarAvg() < 33){
-        analogWrite(Motor_L_pwm_pin,75);
-        analogWrite(Motor_R_pwm_pin,75);
-        return;
-      }
+    delay(2000);
+    analogWrite(Motor_L_pwm_pin,75);
+    analogWrite(Motor_R_pwm_pin,75);
+    return;
     }
   }  
 }
@@ -283,7 +284,7 @@ String compdirection(int degree){ //Determine the letters to return with if stat
  }
 
 void setup() {
-    Wire.begin();
+  Wire.begin();
   pinMode(buttonPin, INPUT);
   pinMode(Encoder_Int4, INPUT);
   pinMode(Encoder_Int5, INPUT);//Detects button being pressed
@@ -304,54 +305,82 @@ void setup() {
 }
 
 void loop() {
+  String message;
   String rgb = RGBsensor(0);
-/*   lcd.setCursor(0,0);
-  lcd.print(rgb);
-  Serial.println(rgb);
-  lcd.setCursor(0,1);
-  lidarDist = LidarAvg();
-  lcd.print(lidarDist);
-  lcd.setCursor(0, 2);
-  lcd.print("Compass = ");
-  lcd.print(wiregetdegree()); */
-  if(lidarDist < 20){
-    pass();
-  }
-  if(Serial2.available() > 0){
-    Serial2.println("Lid="+String(lidarDist));
-    Serial2.println("Com="+String(wiregetdegree()));
-    Serial2.println("RGB="+rgb);
-    String message = Serial2.readStringUntil('\n');
-    Serial.println(message);
-    if(message.indexOf("Drive") > -1 ){
-      if(message.indexOf("1") > -1){     
-        String col = RGBsensor(1);
-        if(col == "blue"){
-          go_back(5);
-          right_turn(34);
-        }
-        else if(col == "red"){
-          go_back(5);
-          left_turn(34);
-        }
-        else if(col == "grey"){
-          digitalWrite(Motor_L_dir_pin, 1); //Here the values for direction and speed are actually sent to the motors
-          digitalWrite(Motor_R_dir_pin, 1);
-          if(lidarDist < 33){
-            analogWrite(Motor_L_pwm_pin,75);
-            analogWrite(Motor_R_pwm_pin,75);
-          }
-          else{
-            analogWrite(Motor_L_pwm_pin,150);
-            analogWrite(Motor_R_pwm_pin,150);            
-          }
-        }
-      } 
+  lcd.setCursor(0,0);
+  lcd.print(right_count);
+  if(Serial2.available() > -1){
+    iterator += 1;
+    lcd.setCursor(0, 1);
+    lcd.print(iterator);
+    if(iterator % 4 == 0){
+      Serial2.println("Lid="+String(LidarAvg()));
+      delay(50);
+      Serial2.println("Com="+String(wiregetdegree()));
+      delay(50);
+      Serial2.println("RGB="+rgb);
     }
     else{
-      analogWrite(Motor_L_pwm_pin,0);
-      analogWrite(Motor_R_pwm_pin,0);
+      message = Serial2.readStringUntil('\n');
+      Serial.println(message);
+    }
+    if(LidarAvg() < 20){
+      pass();
+    }
+    if(message.indexOf("Drive") > -1 ){
+      if(message.indexOf("1") > -1){     
+        movementState = MOVE;
+        target = 500;
+      }
+      else if(message.indexOf("0") > -1){
+        movementState=ZERO;
+        analogWrite(Motor_L_pwm_pin, 0);
+        analogWrite(Motor_R_pwm_pin,0);
+      }
+    }
+    String col = RGBsensor(1);
+    if(col == "blue"){
+      go_back(5);
+      right_turn(34);
+    }
+    else if(col == "red"){
+      go_back(5);
+      left_turn(34);
+    }
+    else if(col == "grey"){
+      digitalWrite(Motor_L_dir_pin, 1); //Here the values for direction and speed are actually sent to the motors
+      digitalWrite(Motor_R_dir_pin, 1);
+      if(lidarDist < 33){
+        analogWrite(Motor_L_pwm_pin,75);
+        analogWrite(Motor_R_pwm_pin,75);
+      }
+      else{
+        analogWrite(Motor_L_pwm_pin,150);
+        analogWrite(Motor_R_pwm_pin,150);            
+      }
     }
   }
-  delay(50);
+  else{
+    Serial.println("Esp not available");
+    analogWrite(Motor_R_pwm_pin,0);
+    analogWrite(Motor_L_pwm_pin,0);
+  }
+  switch(movementState){
+    case MOVE:
+      if(right_count > target*1.4){
+        analogWrite(Motor_L_pwm_pin,0);
+        analogWrite(Motor_R_pwm_pin,0);
+        count_reset();
+      }
+      break;
+    case SPIN:
+      int degree = wiregetdegree();
+      if(degree <= target + 1 && degree >= target - 1){
+        analogWrite(Motor_L_pwm_pin,0);
+        analogWrite(Motor_R_pwm_pin,0);
+        count_reset();
+      }
+      break;
+    }
+  delay(100);
  }
