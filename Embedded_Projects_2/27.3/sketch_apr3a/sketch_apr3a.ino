@@ -221,10 +221,10 @@ String RGBsensor(int opt){
   g *= 256;
   b *= 256;
   if(opt == 1){
-    if(r > 100){
+    if(r > 76){
       return "red";
     }
-    else if(b > 145){
+    else if(b > 135){
       return "blue";
     }
     else{
@@ -245,23 +245,20 @@ void pass(){
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
   analogWrite(Motor_L_pwm_pin,75);
   analogWrite(Motor_R_pwm_pin,150);
-  delay(1000);
+  delay(1600);
   turn_until();
-  while(true){
-    if(myLIDAR.getDistance() > 32){
-    count_reset();
-    analogWrite(Motor_L_pwm_pin,75);
-    analogWrite(Motor_R_pwm_pin,75);
-    digitalWrite(Motor_L_dir_pin, Motor_forward);
-    digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-    delay(1000);
-    analogWrite(Motor_L_pwm_pin,75);
-    analogWrite(Motor_R_pwm_pin,75);
-    return;
-    }
-  }  
+  count_reset();
+  analogWrite(Motor_L_pwm_pin,150);
+  analogWrite(Motor_R_pwm_pin,150);
+  delay(40);
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  delay(600);
+  analogWrite(Motor_L_pwm_pin,75);
+  analogWrite(Motor_R_pwm_pin,75);
+  return;
 }
 String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
   if((degree>=0 && degree < 22.5)||(degree>=337.5)){
@@ -311,6 +308,8 @@ void loop() {
   String rgb = RGBsensor(0);
   lcd.setCursor(0,0);
   lcd.print(right_count);
+  lcd.setCursor(3,0);
+  lcd.print(RGBsensor(1));
   if(Serial2.available() > -1){
     iterator += 1;
     lcd.setCursor(0, 1);
@@ -343,6 +342,7 @@ void loop() {
     }
     String col = RGBsensor(1);
     if(movementState == MOVE){
+      target=500;
       if(col == "blue"){
       go_back(5);
       right_turn(34);
