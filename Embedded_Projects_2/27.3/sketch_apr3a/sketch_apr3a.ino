@@ -21,6 +21,7 @@ int analogPin1 = A0;
 int analogPin2 = A1;
 int trimmer2 = A2;
 int pwm_R, pwm_L, val, y_pwm, x_pwm, dir_L, dir_R, bigpulsecountright, bigpulsecountleft;
+int LidMax = 5;
 int st_Y = 503;
 int st_X = 496;
 int left_count = 0;
@@ -33,30 +34,30 @@ enum State {MOVE, SPIN, ZERO};
 State movementState = ZERO;
 int heading; // Sets the correct heading
 int target = 40;
-
+  
 LIDARLite_v4LED myLIDAR;
-int LidarVals[10];
+int LidarVals[5];
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 float LidarAvg(){ //Gathers lidar information to an array and produces an averaged Lidar value
- int j = 10;
+ int j = LidMax;
   LidarVals[i]=myLIDAR.getDistance();
   i++;
-  if(i==10){
+  if(i==LidMax){
     i=0;
   }
   LidarVals[i]=myLIDAR.getDistance();
   i++;
-  if(i==10){
+  if(i==LidMax){
     i=0;
   }
  int tot = 0;
- if (LidarVals[9] == NULL){
+ if (LidarVals[4] == NULL){
   j=i;
  }
   for(int x=0; x<j; x++) {
     tot += LidarVals[x];
   }
-  float LidAvg = tot/10;
+  float LidAvg = tot/j;
   return LidAvg;
  }
 int wiregetdegree(){
@@ -220,10 +221,10 @@ String RGBsensor(int opt){
   g *= 256;
   b *= 256;
   if(opt == 1){
-    if(r > 100){
+    if(r > 76){
       return "red";
     }
-    else if(b > 145){
+    else if(b > 135){
       return "blue";
     }
     else{
@@ -244,22 +245,20 @@ void pass(){
   digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
   analogWrite(Motor_L_pwm_pin,75);
   analogWrite(Motor_R_pwm_pin,150);
-  while(true){
-    if(LidarAvg() > 15){
-    count_reset();
-    analogWrite(Motor_L_pwm_pin,75);
-    analogWrite(Motor_R_pwm_pin,75);
-    turn_until();
-    digitalWrite(Motor_L_dir_pin, Motor_forward);
-    digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
-    analogWrite(Motor_L_pwm_pin,255);
-    analogWrite(Motor_R_pwm_pin,255);
-    delay(2000);
-    analogWrite(Motor_L_pwm_pin,75);
-    analogWrite(Motor_R_pwm_pin,75);
-    return;
-    }
-  }  
+  delay(1600);
+  turn_until();
+  count_reset();
+  analogWrite(Motor_L_pwm_pin,150);
+  analogWrite(Motor_R_pwm_pin,150);
+  delay(40);
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward); //Wheels rotate in opposite directions
+  analogWrite(Motor_L_pwm_pin,255);
+  analogWrite(Motor_R_pwm_pin,255);
+  delay(600);
+  analogWrite(Motor_L_pwm_pin,75);
+  analogWrite(Motor_R_pwm_pin,75);
+  return;
 }
 String compdirection(int degree){ //Determine the letters to return with if statements that correspond to the correct directions
   if((degree>=0 && degree < 22.5)||(degree>=337.5)){
@@ -309,11 +308,13 @@ void loop() {
   String rgb = RGBsensor(0);
   lcd.setCursor(0,0);
   lcd.print(right_count);
+  lcd.setCursor(3,0);
+  lcd.print(RGBsensor(1));
   if(Serial2.available() > -1){
     iterator += 1;
     lcd.setCursor(0, 1);
     lcd.print(iterator);
-    if(iterator % 4 == 0){
+    if(iterator % 3 == 0){
       Serial2.println("Lid="+String(LidarAvg()));
       delay(50);
       Serial2.println("Com="+String(wiregetdegree()));
@@ -324,22 +325,25 @@ void loop() {
       message = Serial2.readStringUntil('\n');
       Serial.println(message);
     }
-    if(LidarAvg() < 20){
+    if(myLIDAR.getDistance() < 25){
       pass();
     }
     if(message.indexOf("Drive") > -1 ){
-      if(message.indexOf("1") > -1){     
+      if(message.indexOf("1") == 6){     
         movementState = MOVE;
         target = 500;
       }
-      else if(message.indexOf("0") > -1){
+      else if(message.indexOf("0") == 6){
         movementState=ZERO;
+        target=0;
         analogWrite(Motor_L_pwm_pin, 0);
         analogWrite(Motor_R_pwm_pin,0);
       }
     }
     String col = RGBsensor(1);
-    if(col == "blue"){
+    if(movementState == MOVE){
+      target=500;
+      if(col == "blue"){
       go_back(5);
       right_turn(34);
     }
@@ -358,6 +362,7 @@ void loop() {
         analogWrite(Motor_L_pwm_pin,150);
         analogWrite(Motor_R_pwm_pin,150);            
       }
+    }
     }
   }
   else{
