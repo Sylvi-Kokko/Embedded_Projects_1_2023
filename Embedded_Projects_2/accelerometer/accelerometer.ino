@@ -5,6 +5,7 @@ DFRobot_LIS2DH12 acce(&Wire,0x18);
 void setup(void){
 
   Serial.begin(9600);
+  Serial2.begin(9600);
   while(!acce.begin()){
      Serial.println("Accelerometer initialization failed");
      delay(1000);
@@ -32,17 +33,17 @@ void loop(void){
   delay(300);
   if (ax0 == 0 || ax-ax0 > 3 || ax0-ax > 3) {
     ax0 = ax;
-    Serial2.print("x=")
-    Serial2.print(ax0)
+    Serial2.print("x=");
+    Serial2.println(String(ax0));
   }
   if (ay0 == 0 || ay-ay0 > 3 || ay0-ay > 3) {
     ay0 = ay;
-    Serial2.print("y=")
-    Serial2.print(ay0)
+    Serial2.print("y=");
+    Serial2.println(String(ay0));
   }
   if (az0 == 0 || az-az0 > 3 || az0-az > 3) {
     az0 = az;
-    Serial2.print("z=")
-    Serial2.print(az0)
+    Serial2.print("z=");
+    Serial2.println(String(az0));
   }
 }

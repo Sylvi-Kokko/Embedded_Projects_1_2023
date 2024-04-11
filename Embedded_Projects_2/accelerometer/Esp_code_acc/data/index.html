@@ -55,14 +55,22 @@
 				<span>Compass</span>
 				<span id="from_mega_deg">Loading....</span>
 			</div>
-			<div id="rgbsquare">
+			<div class="sensors-container">
+				<div class="sensor-container">
+					<div id="rgbsquare"></div>
+					<div class="accbar" id="xbar" style="height: 5px;"></div>
+					<div class="accbar-label" id="xlabel">X</div>
+				</div>
+				<div class="sensor-container">
+					<div class="accbar" id="ybar" style="height: 5px;"></div>
+					<div class="accbar-label" id="ylabel">Y</div>
+				</div>
+				<div class="sensor-container">
+					<div class="accbar" id="zbar" style="height: 5px;"></div>
+					<div class="accbar-label" id="zlabel">Z</div>
+				</div>
 			</div>
-			<div id="xbar">
-			</div>
-			<div id="ybar">
-			</div>
-			<div id="zbar">
-			</div>
+			
 		</div>
 		<button onclick="warning_state = !warning_state"></button>
 	</div>
@@ -142,14 +150,20 @@
 			const xbar = document.getElementById('xbar');
 			const ybar = document.getElementById('ybar');
 			const zbar = document.getElementById('zbar');
+			const xlabel = document.getElementById('xlabel');
+			const ylabel = document.getElementById('ylabel');
+			const zlabel = document.getElementById('zlabel');
 			if (acc == 'x') {
 				xbar.style.height = `${val}px`;
+				xlabel.innerHTML = `X=${val}`;
 			}
 			if (acc == 'y') {
 				ybar.style.height = `${val}px`;
+				ylabel.innerHTML = `Y=${val}`;
 			}
 			if(acc == 'z') {
 				zbar.style.height = `${val}px`;
+				zlabel.innerHTML = `Z=${val}`;
 			}
 		}
 
