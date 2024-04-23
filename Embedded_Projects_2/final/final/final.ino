@@ -73,14 +73,14 @@ void LidarAvg() {
       arrayFilled = true;
   }
   int numReadings = arrayFilled ? MAX_READINGS : currentIndex;
-  for (int i = 0; i < numReadings; i++) {
+/*   for (int i = 0; i < numReadings; i++) {
     count_reset();
     analogWrite(Motor_L_pwm_pin,170);
     analogWrite(Motor_R_pwm_pin,170);
     if(right_count >= 14){
       analogWrite(Motor_L_pwm_pin,0);
       analogWrite(Motor_R_pwm_pin,0);
-    }
+    } */ // Has to fixed 
     LidarVals[currentIndex] = myLIDAR.getDistance()/right_count;
   }
  //Calculate average from LidarVals and return it
