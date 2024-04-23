@@ -36,6 +36,10 @@ const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 bool start = false;
+struct match{
+  int dif;
+  int color;
+};
 struct encoder_lidar{
   int lidarDistance;
   int encoderDistance;
@@ -52,6 +56,9 @@ struct RGB {
 RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow
 int colDifTreshold = 80;
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+typedef struct RGB co;
+struct match calcColDif(co *c);
+
 
 void LidarAvg() {
   struct encoder_lidar LidarVals[MAX_READINGS];
@@ -73,7 +80,7 @@ void LidarAvg() {
       analogWrite(Motor_L_pwm_pin,0);
       analogWrite(Motor_R_pwm_pin,0);
     }
-    LidarVals[currentIndex].lidarDistance = myLIDAR.readDistance();
+    LidarVals[currentIndex].lidarDistance = myLIDAR.getDistance();
     LidarVals[currentIndex].encoderDistance = right_count;
   }
 
@@ -138,17 +145,20 @@ void measure(){
   }
 }
 
-int calcColDif(struct RBG col){
-  int colorDif[4];
-  int max=0;
+struct match calcColDif(co *c){
+  int colorDif;
+  match colMatch{500,5};
   for(int i = 0; i < 4; i++){
-    int r_diff = col.r - colors[i].r;
-    int g_diff = col.g - colors[i].g;
-    int b_diff = col.b - colors[i].b;
-    colorDif[i] = r_diff + g_diff + b_diff;
+    int r_diff = c->r - colors[i].r;
+    int g_diff = c->g - colors[i].g;
+    int b_diff = c->b - colors[i].b;
+    colorDif = r_diff + g_diff + b_diff;
+    if(colorDif < colMatch.dif){
+      colMatch.dif = colorDif;
+      colMatch.color = i;
+    }
   }
-  colorDif
-  return 
+  return colMatch;
 }
 
 struct RGB RGBsensor(){
