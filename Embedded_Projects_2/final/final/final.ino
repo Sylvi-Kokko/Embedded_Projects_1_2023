@@ -37,6 +37,7 @@ int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 int enginePower = 75;
 bool start = false;
+float lidAv;
 int target = -1;
 struct match{
   int dif;
@@ -63,7 +64,7 @@ struct match calcColDif(co *c);
 
 
 void LidarAvg() {
-  struct encoder_lidar LidarVals[MAX_READINGS];
+  int LidarVals[MAX_READINGS];
   static bool arrayFilled = false;
 
   currentIndex++;
@@ -71,8 +72,6 @@ void LidarAvg() {
       currentIndex = 0;
       arrayFilled = true;
   }
-
-  int tot = 0;
   int numReadings = arrayFilled ? MAX_READINGS : currentIndex;
   for (int i = 0; i < numReadings; i++) {
     count_reset();
@@ -82,11 +81,13 @@ void LidarAvg() {
       analogWrite(Motor_L_pwm_pin,0);
       analogWrite(Motor_R_pwm_pin,0);
     }
-    LidarVals[currentIndex].lidarDistance = myLIDAR.getDistance();
-    LidarVals[currentIndex].encoderDistance = right_count;
+    LidarVals[currentIndex] = myLIDAR.getDistance()/right_count;
   }
-
-
+ //Calculate average from LidarVals and return it
+  for(int i=0, i<MAX_READINGS, i++) {
+    int factor =+ LidarVals[i];
+    lidAv = factor/MAX_READINGS;
+  }
 }
 
 void buttonPressed(){
