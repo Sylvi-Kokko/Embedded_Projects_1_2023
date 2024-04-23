@@ -214,20 +214,22 @@ void setup() {
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
-while(!start){
-String message = Serial2.readStringUntil('\n');
-if (message="start_program"){
-  start = true;
+  String message = Serial2.readStringUntil('\n');
+      if (message="start_program"){
+        start = !start;
+      }
+  while(!start){
+    String message = Serial2.readStringUntil('\n');
+    if (message="start_program"){
+      start = !start;
+    }
 }
-{calcColDif()}
-
   co currentColor;
   currentColor = RGBsensor();
   co *cptr = &currentColor; // Pointer to the current color
   match cuCol = calcColDif(cptr); //Return the preset it's the most similar to
 
-}
-if(red) {
+if(cuCol.color == 0) {
   //stop
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
@@ -249,13 +251,13 @@ if(red) {
     target = -1;
   }
 }
-if(blue) {
+if(cuCol.color == 1) {
   enginePower = 30;
 }
-if(green) {
+if(cuCol.color == 2) {
   enginePower = 120;
 }
-if(yellow) {
+if(cuCol.color == 3) {
   Win
 }
 if(obstacle) {
@@ -268,7 +270,10 @@ if(move) {
     analogWrite(Motor_R_pwm_pin,enginePower);
 }
 else {
-itterate  
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,enginePower);
+  analogWrite(Motor_R_pwm_pin,enginePower);
 }
 
 }
