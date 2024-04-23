@@ -41,6 +41,7 @@ bool start = false, wallHunt = false;
 int wDistB, wDistR, wDistL;
 float lidAv;
 int target = -1;
+int pass = -1;
 struct match{
   int dif;
   int color;
@@ -191,6 +192,46 @@ struct RGB RGBsensor(){
   col.b = b;
   return col;
 }
+void Obstacle(){
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  int current = wiregetdegree();
+if(pass == -1) {
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,enginePower);
+  analogWrite(Motor_R_pwm_pin,enginePower);
+  delay(100);
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  delay(200);
+  pass = 1;
+  return;
+}
+  //turn final
+  if(target == -1) {int target = wiregetdegree()+90;}
+  if(target > 360){
+      target = target - 360;
+    }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  while(true){
+  current = wiregetdegree();
+  if(current <= target+2 && current >= target-2){
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target = -1;
+    pass = -1;
+    break;
+  }
+  }
+}
 
 void setup() {
   Wire.begin();
@@ -264,29 +305,7 @@ if(cuCol.color == 0) {
 }
 }
 if(myLIDAR.readDistance() <= 12) {
-  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  int current = wiregetdegree();
-  //turn
-  if(target == -1) {int target = wiregetdegree()+90;}
-  if(target > 360){
-      target = target - 360;
-    }
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
-  digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,50);
-  analogWrite(Motor_R_pwm_pin,50);
-  while(true){
-  current = wiregetdegree();
-  if(current <= target+2 && current >= target-2){
-    digitalWrite(Motor_L_dir_pin, Motor_forward);
-    digitalWrite(Motor_R_dir_pin, Motor_forward);
-    analogWrite(Motor_L_pwm_pin,0);
-    analogWrite(Motor_R_pwm_pin,0);
-    target = -1;
-    break;
-  }
-  }
+  Obstacle();
 }
 if(cuCol.color == 1) {
   enginePower = 30;
@@ -314,7 +333,7 @@ if(wallHunt){
   analogWrite(Motor_L_pwm_pin,50);
   analogWrite(Motor_R_pwm_pin,50);
   while(true){
-  current = wiregetdegree();
+  int current = wiregetdegree();
   if(current <= backWall+3 && current >= backWall-3) {
     digitalWrite(Motor_L_dir_pin, Motor_forward);
     digitalWrite(Motor_R_dir_pin, Motor_forward);
@@ -406,7 +425,8 @@ if(wallHunt){
   if (cuCol.color == 2){
     return;
   }
-
+  }
 }
-
+}
+}
 }
