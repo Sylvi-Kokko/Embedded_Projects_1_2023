@@ -155,6 +155,63 @@ void measure(){
   }
 }
 
+void Obstacle(){
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  int current = wiregetdegree();
+if(pass == -1) {
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,enginePower);
+  analogWrite(Motor_R_pwm_pin,enginePower);
+  delay(100);
+  if(target == -1) {int target = wiregetdegree()-45;}
+  if(target < 0){
+      target = target + 360;
+    }
+  digitalWrite(Motor_L_dir_pin, Motor_return);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,enginePower);
+  analogWrite(Motor_R_pwm_pin,enginePower);
+  while(true){
+  current = wiregetdegree();
+  if(current <= target+2 && current >= target-2){
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target = -1;
+    break;
+  }
+  pass = 1;
+  return;
+}
+  //turn final
+  if(target == -1) {int target = wiregetdegree()+90;}
+  if(target > 360){
+      target = target - 360;
+    }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,enginePower);
+  analogWrite(Motor_R_pwm_pin,enginePower);
+  while(true){
+  current = wiregetdegree();
+  if(current <= target+2 && current >= target-2){
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target = -1;
+    pass = -1;
+    break;
+  }
+  }
+  return;
+}
+}
+
+
 struct match calcColDif(co *c){
   int colorDif;
   match colMatch{500,5};
@@ -191,51 +248,6 @@ struct RGB RGBsensor(){
   col.g = g;
   col.b = b;
   return col;
-}
-void Obstacle(){
-  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  int current = wiregetdegree();
-if(pass == -1) {
-  digitalWrite(Motor_L_dir_pin, Motor_return);
-  digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,enginePower);
-  analogWrite(Motor_R_pwm_pin,enginePower);
-  delay(100);
-  digitalWrite(Motor_L_dir_pin, Motor_return);
-  digitalWrite(Motor_R_dir_pin, Motor_forward);
-  analogWrite(Motor_L_pwm_pin,50);
-  analogWrite(Motor_R_pwm_pin,50);
-  delay(200);
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
-  digitalWrite(Motor_R_dir_pin, Motor_forward);
-  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-  pass = 1;
-  return;
-}
-  //turn final
-  if(target == -1) {int target = wiregetdegree()+90;}
-  if(target > 360){
-      target = target - 360;
-    }
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
-  digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,50);
-  analogWrite(Motor_R_pwm_pin,50);
-  while(true){
-  current = wiregetdegree();
-  if(current <= target+2 && current >= target-2){
-    digitalWrite(Motor_L_dir_pin, Motor_forward);
-    digitalWrite(Motor_R_dir_pin, Motor_forward);
-    analogWrite(Motor_L_pwm_pin,0);
-    analogWrite(Motor_R_pwm_pin,0);
-    target = -1;
-    pass = -1;
-    break;
-  }
-  }
-  return;
 }
 
 void setup() {
