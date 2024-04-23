@@ -36,7 +36,9 @@ const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 int enginePower = 75;
-bool start = false;
+int backWall, rightWall, leftWall;
+bool start = false, wallHunt = false;
+int wDistB, wDistR, wDistL;
 float lidAv;
 int target = -1;
 struct match{
@@ -257,18 +259,6 @@ if(cuCol.color == 0) {
   }  
 }
 }
-if(cuCol.color == 1) {
-  enginePower = 30;
-}
-if(cuCol.color == 2) {
-  enginePower = 120;
-}
-if(cuCol.color == 3) {
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
-  digitalWrite(Motor_R_dir_pin, Motor_forward);
-  analogWrite(Motor_L_pwm_pin,0);
-  analogWrite(Motor_R_pwm_pin,0);
-}
 if(myLIDAR.readDistance() <= 12) {
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
@@ -294,11 +284,125 @@ if(myLIDAR.readDistance() <= 12) {
   }
   }
 }
+if(cuCol.color == 1) {
+  enginePower = 30;
+}
+else if(cuCol.color == 2) { //Detect green
+  enginePower = 120;
+  wallHunt = true;
+}
+else if(cuCol.color == 3) {
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  start = false;
+}
 else {
   digitalWrite(Motor_L_dir_pin, Motor_forward);
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   analogWrite(Motor_L_pwm_pin,enginePower);
   analogWrite(Motor_R_pwm_pin,enginePower);
+}
+if(wallHunt){
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  while(true){
+  current = wiregetdegree();
+  if(current <= backWall+3 && current >= backWall-3) {
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    break;
+  }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,120);
+  analogWrite(Motor_R_pwm_pin,120);
+  while(true){
+    if(myLIDAR.getDistance() < wDistB){
+      analogWrite(Motor_L_pwm_pin,0);
+      analogWrite(Motor_R_pwm_pin,0);
+      break;
+    }
+  }
+  co currentColor;
+  currentColor = RGBsensor();
+  co *cptr = &currentColor; // Pointer to the current color
+  match cuCol = calcColDif(cptr);
+  if (cuCol.color == 3){
+    return;
+  }
+  /////////////////////////////////
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  while(true){
+  current = wiregetdegree();
+  if(current <= rightWall+3 && current >= rightWall-3) {
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target=-1;
+    break;
+  }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,120);
+  analogWrite(Motor_R_pwm_pin,120);
+  while(true){
+    if(myLIDAR.getDistance() < wDistR){
+      analogWrite(Motor_L_pwm_pin,0);
+      analogWrite(Motor_R_pwm_pin,0);
+      break;
+    }
+  }
+  co currentColor;
+  currentColor = RGBsensor();
+  co *cptr = &currentColor; // Pointer to the current color
+  match cuCol = calcColDif(cptr);
+  if (cuCol.color == 3){
+    return;
+  }
+  //////////////////////////////////////////////////
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  while(true){
+  current = wiregetdegree();
+  if(current <= leftWall+3 && current >= leftWall-3) {
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target=-1;
+    break;
+  }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,120);
+  analogWrite(Motor_R_pwm_pin,120);
+  while(true){
+    if(myLIDAR.getDistance() < wDistL){
+      analogWrite(Motor_L_pwm_pin,0);
+      analogWrite(Motor_R_pwm_pin,0);
+      break;
+    }
+  }
+  co currentColor;
+  currentColor = RGBsensor();
+  co *cptr = &currentColor; // Pointer to the current color
+  match cuCol = calcColDif(cptr);
+  if (cuCol.color == 2){
+    return;
+  }
+
 }
 
 }
