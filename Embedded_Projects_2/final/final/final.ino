@@ -213,12 +213,16 @@ void setup() {
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
-while(!start){
-String message = Serial2.readStringUntil('\n');
-if (message="start_program"){
-  start = true;
-}
-}
+  while(!start){
+    String message = Serial2.readStringUntil('\n');
+    if (message="start_program"){
+      start = true;
+    }
+  }
 
+  co currentColor;
+  currentColor = RGBsensor();
+  co *cptr = &currentColor; // Pointer to the current color
+  match cuCol = calcColDif(cptr); //Return the preset it's the most similar to
 
 }
