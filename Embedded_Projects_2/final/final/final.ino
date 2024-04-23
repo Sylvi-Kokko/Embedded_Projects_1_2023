@@ -233,7 +233,7 @@ if(red) {
   analogWrite(Motor_R_pwm_pin,0);
   int current = wiregetdegree();
   //turn
-  int target = current-90;
+  if(target == -1) {int target = wiregetdegree()+90;}
   if(target > 360){
       target = target - 360;
     }
@@ -242,11 +242,12 @@ if(red) {
   analogWrite(Motor_L_pwm_pin,50);
   analogWrite(Motor_R_pwm_pin,50);
   if(current == target){
-      analogWrite(Motor_L_pwm_pin,0);
-      analogWrite(Motor_R_pwm_pin,0);
-    }
-  digitalWrite(Motor_L_dir_pin, Motor_forward);
-  digitalWrite(Motor_R_dir_pin, Motor_forward);
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
+    target = -1;
+  }
 }
 if(blue) {
   enginePower = 30;
@@ -259,6 +260,12 @@ if(yellow) {
 }
 if(obstacle) {
   stop and turn 90
+}
+if(move) {
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
+    analogWrite(Motor_L_pwm_pin,enginePower);
+    analogWrite(Motor_R_pwm_pin,enginePower);
 }
 else {
 itterate  
