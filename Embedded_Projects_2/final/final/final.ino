@@ -42,11 +42,12 @@ struct lidar_comp{
   int compassDegree;
 };
 struct RGB {
-  int red;
-  int green;
-  int blue;
+  int r;
+  int g;
+  int b;
 };
 RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow
+int colDifTreshold = 80;
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void LidarAvg() {
@@ -69,7 +70,7 @@ void LidarAvg() {
       analogWrite(Motor_L_pwm_pin,0);
       analogWrite(Motor_R_pwm_pin,0);
     }
-    LidarVals[currentIndex].lidarDistance = myLIDAR.getDistance();
+    LidarVals[currentIndex].lidarDistance = myLIDAR.readDistance();
     LidarVals[currentIndex].encoderDistance = right_count;
   }
 
@@ -130,9 +131,23 @@ void measure(){
       analogWrite(Motor_R_pwm_pin,0);
     }
     readings[i].compassDegree = wiregetdegree();
-    readings[i].lidarDistance = myLIDAR.getDistance();
+    readings[i].lidarDistance = myLIDAR.readDistance();
   }
 }
+
+int calcColDif(struct RBG col){
+  int colorDif[4];
+  int max=0;
+  for(int i = 0; i < 4; i++){
+    int r_diff = col.r - colors[i].r;
+    int g_diff = col.g - colors[i].g;
+    int b_diff = col.b - colors[i].b;
+    colorDif[i] = r_diff + g_diff + b_diff;
+  }
+  colorDif
+  return 
+}
+
 struct RGB RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
@@ -149,9 +164,9 @@ struct RGB RGBsensor(){
   g *= 256;
   b *= 256;
   struct RGB col;
-  col.red = r;
-  col.green = g;
-  col.blue = b;
+  col.r = r;
+  col.g = g;
+  col.b = b;
   return col;
 }
 
