@@ -35,6 +35,7 @@ LIDARLite_v4LED myLIDAR;
 const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
+int enginePower = 75;
 bool start = false;
 struct match{
   int dif;
@@ -218,7 +219,44 @@ String message = Serial2.readStringUntil('\n');
 if (message="start_program"){
   start = true;
 }
-}
+{calcColDif()}
 
+}
+if(red) {
+  //stop
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  int current = wiregetdegree();
+  //turn
+  int target = current-90;
+  if(target > 360){
+      target = target - 360;
+    }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_return);
+  analogWrite(Motor_L_pwm_pin,50);
+  analogWrite(Motor_R_pwm_pin,50);
+  if(current == target){
+      analogWrite(Motor_L_pwm_pin,0);
+      analogWrite(Motor_R_pwm_pin,0);
+    }
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+}
+if(blue) {
+  enginePower = 30;
+}
+if(green) {
+  enginePower = 120;
+}
+if(yellow) {
+  Win
+}
+if(obstacle) {
+  stop and turn 90
+}
+else {
+itterate  
+}
 
 }
