@@ -35,6 +35,7 @@ LIDARLite_v4LED myLIDAR;
 const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
+bool start = false;
 struct encoder_lidar{
   int lidarDistance;
   int encoderDistance;
@@ -201,6 +202,13 @@ void setup() {
 }
 
 void loop() {
+// while loop to wait until start button is pressed on website, and won't check again after starting.
+while(!start){
+String message = Serial2.readStringUntil('\n');
+if (message="start_program"){
+  start = true;
+}
+}
 
 
 }
