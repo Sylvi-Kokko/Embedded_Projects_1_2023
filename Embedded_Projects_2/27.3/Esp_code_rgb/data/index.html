@@ -43,6 +43,8 @@
 				<button onclick="FRW5()">Forw 5cm</button>
 				<button onclick="RET20()">Ret.. 20cm</button>
 				<button onclick="RET5()">Ret.. 5cm</button>
+				<button onClick="Drive()">Drive</button>
+				<button onClick="Stop()">Stop</button>
 			</div>
 			<br />
 			<div class = "companddist">
@@ -71,6 +73,7 @@
 		var From_Mega = 0 // string variable from server/mega
 		var dire = 0;		// direction
 		var dist = 0;		// distance
+		var driv = 0;    // drive 1 or stop 0
 		var mode = 0;		// mode 1 = direction value 2=distance vale
 		var warning_state = true; //
 
@@ -126,7 +129,8 @@
 
 		function rgb_color(hex){
 			const square = document.getElementById('rgbsquare');
-			square.style.backgroundColor = `${hex}`;
+			square.style.backgroundColor = `#${hex}`;
+			console.log("RGB color updates");
 		}
 
 		function obstacle_warning(){
@@ -155,6 +159,20 @@
 			document.getElementById("box2").value = "Forw 5 cm";
 			mode = 2;
 			dist = 5;
+			httpGetAsync();
+		}
+
+		function Drive() {
+			document.getElementById("box2").value = "Drive";
+			mode = 3;
+			driv = 1
+			httpGetAsync();
+		}
+
+		function Stop() {
+			document.getElementById("box2").value = "Stop";
+			mode = 3;
+			driv = 0;
 			httpGetAsync();
 		}
 
@@ -188,6 +206,7 @@
 			}
 			if (mode == 1) { xmlHttp.open("GET", '/?dire=' + dire, true); };// true for asynchronous
 			if (mode == 2) { xmlHttp.open("GET", '/?dist=' + dist, true); };// true for asynchronous
+			if (mode == 3) { xmlHttp.open("GET", '/?driv=' + driv, true); };// true for asynchronous'}
 			xmlHttp.send(null);
 		}
 
@@ -210,7 +229,7 @@
 					if (COM == "Lid") {
 						document.getElementById("Box_lidar_dist").innerHTML = ival;
 					}
-					if(COM == "rgb"){
+					if(COM == "RGB"){
 						rgb_color(ival);
 					}
 				}

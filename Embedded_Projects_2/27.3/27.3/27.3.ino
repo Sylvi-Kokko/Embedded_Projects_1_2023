@@ -36,7 +36,8 @@ int right_count = 0;
 int pulseDistR, pulseDistL;
 const byte buttonPin = 19;
 enum steeringState {serial, wifi, joystick};
-steeringState steering_mode = serial;
+int iterator = 0;
+steeringState steering_mode = joystick;
 bool isTrimmer =  false;
 bool correct = false; // Whether to correct heading
 int heading; // Sets the correct heading
@@ -68,7 +69,6 @@ void buttonPressed(){
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
  }
-
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
@@ -254,46 +254,7 @@ float LidarAvg(){ //Gathers lidar information to an array and produces an averag
   float LidAvg = tot/10;
   return LidAvg;
  }
-
-void measurement(int height){ //Measures volume in a space
-  int init = wiregetdegree();
-  int xpos = myLIDAR.getDistance();
-  Serial.print("xpos=");
-  Serial.print(xpos);
-  turn_until(init+90);
-  int ypos = myLIDAR.getDistance();
-  Serial.print("ypos=");
-  Serial.print(ypos);
-  turn_until(init+180);
-  int xneg = myLIDAR.getDistance();
-  Serial.print("xneg=");
-  Serial.print(xneg);
-  turn_until(init+270);
-  int yneg = myLIDAR.getDistance();
-  Serial.print("yneg=");
-  Serial.print(yneg);
-  float area = (xpos+xneg)*(ypos+yneg);
-  float volume = area*height;
-  lcd.clear();
-  Serial.print("xpos=");
-  Serial.print(xpos);
-  Serial.print("ypos=");
-  Serial.print(ypos);
-  Serial.print("xneg=");
-  Serial.print(xneg);
-  Serial.print("yneg=");
-  Serial.print(yneg);
-  lcd.setCursor(0,1);
-  lcd.print("Area= ");
-  lcd.print(area);
-  lcd.print("cm^2");
-  lcd.setCursor(0, 2);
-  lcd.print("Volume= ");
-  lcd.print(volume);
-  lcd.print("cm^3");
-  delay(6000);
-  lcd.clear();
- }
+ 
 void serialsteering(){
   val = 0;
     lcd.setCursor(0, 0);
@@ -304,15 +265,8 @@ void serialsteering(){
     int pos_s;
     int poz_z;
     int movement = message.indexOf("Move");
-    int eeprom = message.indexOf("eeprom");
     int turn = message.indexOf("Turn");
-    int until = message.indexOf("UNTIL");
-    int followDist = message.indexOf("Follow");
-    int followTrim = message.indexOf("Trimmer");
-    int ex4 = message.indexOf("ex4");
-    int cali = message.indexOf("Calibrate");
-    int measure = message.indexOf("Measure");
-    int correction = message.indexOf("Correct");
+    int until = message.indexOf("Until");
     if (movement > -1){ //If the command was movement, index will be bigger than -1
       Serial.println("Command = movement ");
       pos_s = message.indexOf(":");
@@ -344,43 +298,6 @@ void serialsteering(){
         val = stat.toInt();
         turn_until(val);
       }
-    }else if (followDist > -1){
-      Serial.println("Command = Follow ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){
-        String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-        follow_dist = val;
-        isTrimmer = false;
-      }
-    }else if (correction > -1){
-      String stat = message.substring(pos_s +1 );
-      correct != correct;
-      heading = wiregetdegree();
-      Serial.println("Command = Correct " + correct);
-    }else if (followTrim > -1){
-      Serial.println("Command = Trimmer ");
-      String stat = message.substring(pos_s + 1);
-      val = analogRead(trimmer2);
-      follow_dist = val/50;
-      isTrimmer = true;
-    }else if (eeprom > -1){
-      Serial.println("Command = EepromRead");
-      String stat = message.substring(pos_s + 1);
-      pos_s = message.indexOf(":");
-      eepromRead();
-    }else if (measure > -1){
-      Serial.println("Command = Measurement ");
-      pos_s = message.indexOf(":");
-      if (pos_s > -1){
-        String stat = message.substring(pos_s + 1);
-        val = stat.toInt();
-      measurement(val);
-      }
-    }else if (cali > -1){
-      Serial.println("Command = Calibrating ");
-      pos_s = message.indexOf(":");
-      calibrate();
     }else{
       Serial.println("No greeting found, try typing Print:Hi or Print:Hello\n");
     }
@@ -390,7 +307,6 @@ void wifisteering(){ //Controlling the motion through wifi
   val = 0;
   lcd.setCursor(0, 0);
   if (Serial2.available() > 0){
-      Serial.println("Esp available");
       Serial2.println("Lid="+String(LidarAvg()-5));
       Serial2.println("Com="+String(wiregetdegree()));
       Serial2.println("RGB="+String());
@@ -400,14 +316,8 @@ void wifisteering(){ //Controlling the motion through wifi
       int pos_s;
       int poz_z;
       int movement = message.indexOf("Move");
-      int eeprom = message.indexOf("eeprom");
       int turn = message.indexOf("Turn");
       int until = message.indexOf("UNTIL");
-      int followDist = message.indexOf("Follow");
-      int followTrim = message.indexOf("Trimmer");
-      int cali = message.indexOf("Calibrate");
-      int measure = message.indexOf("Measure");
-      int correction = message.indexOf("Correct");
       if (movement > -1){ //If the command was movement, index will be bigger than -1
         Serial.println("Command = movement ");
         pos_s = message.indexOf(":");
@@ -597,9 +507,6 @@ void eepromRead(){
   address=0;
   byte value = EEPROM.read(address);
   while(address<EEPROM.length()){Serial.print(address);
-  Serial.print("\t");
-  Serial.print(value, DEC);
-  Serial.println();
   address = address+1;
   }
  }
@@ -608,15 +515,6 @@ String RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
   tcs.lock();
-  Serial.print("C:\t");
-  Serial.print(clear);
-  Serial.print("\tR:\t");
-  Serial.print(red);
-  Serial.print("\tG:\t");
-  Serial.print(green);
-  Serial.print("\tB:\t");
-  Serial.print(blue);
-  Serial.println("\t");
   uint32_t sum = clear;
   float r, g, b;
   r = red;
@@ -628,17 +526,10 @@ String RGBsensor(){
   r *= 256;
   g *= 256;
   b *= 256;
-  Serial.print("\t");
-  Serial.print((int)r, HEX);
-  Serial.print((int)g, HEX);
-  Serial.print((int)b, HEX);
   String hexString = String((int)r, HEX) + String((int)g, HEX) + String((int)b, HEX);
-<<<<<<< HEAD
   Serial2.println(hexString);
-  return 
-=======
   Serial2.println("RGB="+hexString);
->>>>>>> 02bf8c9a46d008482d1f9b25f5bef331183a7c94
+  return hexString;
 }
 
 void setup() {
@@ -666,12 +557,6 @@ void setup() {
 void loop() {
   lidarDist = LidarAvg();
   RGBsensor();
-  Serial2.print("Lid=");
-  Serial2.print(LidarAvg());
-  Serial2.print("\n");
-  Serial2.print("Dist=");
-  Serial2.print(((bigpulsecountleft/encoderCalibrationLeft) + (bigpulsecountright/encoderCalibrationRight))/2);
-  Serial2.print("\n");
   if (steering_mode == wifi){ //Wifi steering. Controlled with the button.
     wifisteering();
     lcd.setCursor(0, 0);
@@ -706,18 +591,6 @@ void loop() {
   }
   else if (steering_mode == joystick){ //Joystick steering
     joysticksteering();
-    lcd.setCursor(0, 0);
-    lcd.print("Steerviajoystick");
-    lcd.setCursor(0, 1);
-    lcd.print("DistL/R(cm):");
-    lcd.print(bigpulsecountleft/encoderCalibrationLeft);
-    lcd.print(" ");
-    lcd.print(bigpulsecountright/encoderCalibrationRight);
-    lcd.setCursor(0, 2);
-    lcd.print("CountsL/R:" );
-    lcd.print(bigpulsecountleft);
-    lcd.print(" ");
-    lcd.print(bigpulsecountright);
   }
   else { // Serial steering. Controlled with the button.
     serialsteering();
@@ -735,7 +608,7 @@ void loop() {
     lcd.print(bigpulsecountright);
     switch(movementState){
       case MOVE:
-        if((right_count > target*1.4) || ()){
+        if((right_count > target*1.4)){
           analogWrite(Motor_L_pwm_pin,0);
           analogWrite(Motor_R_pwm_pin,0);
           count_reset();
@@ -751,28 +624,8 @@ void loop() {
         break;
     }
   }
-  newDistance = lidarDist-5;
-  if (follow_dist > 0) {
-    if (!isTrimmer){
-      lidar_dist(follow_dist);
-    }
-    else {
-      follow_dist = analogRead(A2)/50;
-      if (newDistance+1 < follow_dist) {go_straight(2);}
-      else if (newDistance-1 > follow_dist) {go_back(2);}
-    }
-  }
-  if (correct){
-    if(wiregetdegree() != heading) {
-      turn_until(heading);
-    }
-  }
-  lidarDist = LidarAvg();
   lcd.setCursor(0, 3);
   lcd.print("Compass = ");
   lcd.print(wiregetdegree());
-  lcd.print(" ");
-  lcd.print(compdirection(wiregetdegree()));
   delay(100);
-  lcd.clear();
  }

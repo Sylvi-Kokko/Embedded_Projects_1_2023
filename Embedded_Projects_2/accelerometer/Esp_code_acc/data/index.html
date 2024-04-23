@@ -43,6 +43,8 @@
 				<button onclick="FRW5()">Forw 5cm</button>
 				<button onclick="RET20()">Ret.. 20cm</button>
 				<button onclick="RET5()">Ret.. 5cm</button>
+				<button onClick="Drive()">Drive</button>
+				<button onClick="Stop()">Stop</button>
 			</div>
 			<br />
 			<div class = "companddist">
@@ -53,8 +55,22 @@
 				<span>Compass</span>
 				<span id="from_mega_deg">Loading....</span>
 			</div>
-			<div id="rgbsquare">
+			<div class="sensors-container">
+				<div class="sensor-container">
+					<div id="rgbsquare"></div>
+					<div class="accbar" id="xbar" style="height: 5px;"></div>
+					<div class="accbar-label" id="xlabel">X</div>
+				</div>
+				<div class="sensor-container">
+					<div class="accbar" id="ybar" style="height: 5px;"></div>
+					<div class="accbar-label" id="ylabel">Y</div>
+				</div>
+				<div class="sensor-container">
+					<div class="accbar" id="zbar" style="height: 5px;"></div>
+					<div class="accbar-label" id="zlabel">Z</div>
+				</div>
 			</div>
+			
 		</div>
 		<button onclick="warning_state = !warning_state"></button>
 	</div>
@@ -71,6 +87,7 @@
 		var From_Mega = 0 // string variable from server/mega
 		var dire = 0;		// direction
 		var dist = 0;		// distance
+		var driv = 0;    // drive 1 or stop 0
 		var mode = 0;		// mode 1 = direction value 2=distance vale
 		var warning_state = true; //
 
@@ -129,6 +146,27 @@
 			square.style.backgroundColor = `${hex}`;
 		}
 
+		function accel(acc, val){
+			const xbar = document.getElementById('xbar');
+			const ybar = document.getElementById('ybar');
+			const zbar = document.getElementById('zbar');
+			const xlabel = document.getElementById('xlabel');
+			const ylabel = document.getElementById('ylabel');
+			const zlabel = document.getElementById('zlabel');
+			if (acc == 'x') {
+				xbar.style.height = `${val}px`;
+				xlabel.innerHTML = `X=${val}`;
+			}
+			if (acc == 'y') {
+				ybar.style.height = `${val}px`;
+				ylabel.innerHTML = `Y=${val}`;
+			}
+			if(acc == 'z') {
+				zbar.style.height = `${val}px`;
+				zlabel.innerHTML = `Z=${val}`;
+			}
+		}
+
 		function obstacle_warning(){
 			const warning = document.getElementById('warning');
 			if(!warning_state){
@@ -155,6 +193,20 @@
 			document.getElementById("box2").value = "Forw 5 cm";
 			mode = 2;
 			dist = 5;
+			httpGetAsync();
+		}
+
+		function Drive() {
+			document.getElementById("box2").value = "Drive";
+			mode = 3;
+			driv = 1
+			httpGetAsync();
+		}
+
+		function Stop() {
+			document.getElementById("box2").value = "Stop";
+			mode = 3;
+			driv = 0;
 			httpGetAsync();
 		}
 
@@ -188,6 +240,7 @@
 			}
 			if (mode == 1) { xmlHttp.open("GET", '/?dire=' + dire, true); };// true for asynchronous
 			if (mode == 2) { xmlHttp.open("GET", '/?dist=' + dist, true); };// true for asynchronous
+			if (mode == 3) { xmlHttp.open("GET", '/?driv=' + driv, true); };// true for asynchronous'}
 			xmlHttp.send(null);
 		}
 
@@ -212,6 +265,9 @@
 					}
 					if(COM == "rgb"){
 						rgb_color(ival);
+					}
+					if(COM =="x" || COM == "y" || COM == "z"){
+						accel(COM, ival);
 					}
 				}
 			};

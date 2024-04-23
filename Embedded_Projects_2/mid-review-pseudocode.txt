@@ -1,0 +1,88 @@
+// Global variables
+int moveSpeed = 255;  // Max motor speed
+int turnSpeed = 150;  // Speed for turning
+int minDistance = 5;  // Minimum distance to stop
+int slowDistance = 30;  // Distance to move slowly
+int turnAngle = 60;  // Angle to turn when obstacles are detected
+bool obstacleDetected = false;  // Flag to track obstacle detection
+
+// Setup function
+void setup() {
+  // Initialize motors, encoder, lidar, ESP, etc.
+}
+
+// Main loop function
+void loop() {
+  // Check for commands from ESP/webpage
+  checkCommands();
+
+  // Read lidar distance
+  int lidarDistance = readLidar();
+
+  // Check if lidar distance is less than minimum
+  if (lidarDistance < minDistance) {
+    obstacleDetected = true;
+    stopCar();
+    sendWarning();
+  } else {
+    obstacleDetected = false;
+    
+    // Check if lidar distance is less than slow distance
+    if (lidarDistance < slowDistance) {
+      moveSlow();
+    } else {
+      moveFast();
+    }
+  }
+
+  // If moving forward and obstacle detected, rotate until clear
+  if (isMovingForward() && obstacleDetected) {
+    rotateUntilClear();
+  }
+}
+
+// Check commands from ESP/webpage
+void checkCommands() {
+  // Receive TURN and MOVE commands
+  // Update moveSpeed based on MOVE command
+}
+
+// Read lidar distance and send to ESP
+int readLidar() {
+  // Read lidar distance
+  // Send distance to ESP
+  // Return distance
+}
+
+// Stop the car
+void stopCar() {
+  // Stop motors
+}
+
+// Move the car slowly
+void moveSlow() {
+  // Set motors to move at slow speed
+}
+
+// Move the car at faster speed
+void moveFast() {
+  // Set motors to move at fast speed
+}
+
+// Rotate the car until no obstacles in front
+void rotateUntilClear() {
+  // Rotate the car by turnAngle
+  // Check lidar after each rotation
+  // Stop rotating if all directions are blocked
+}
+
+// Send "Warning!" message to ESP/webpage
+void sendWarning() {
+  // Send "Warning!" message to ESP/webpage
+}
+
+// Check if the car is moving forward
+bool isMovingForward() {
+  // Check encoder or motor direction
+  // Return true if moving forward, false otherwise
+}

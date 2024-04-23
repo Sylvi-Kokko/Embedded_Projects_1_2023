@@ -89,7 +89,12 @@ void setup(){
         Serial.print("Turn:");
         Serial.println(p->value());
       };
-
+      if ((p->name()) == "driv")
+      {
+        Serial.print("Drive:");
+        Serial.println(p->value());
+      };
+      
       //                   Serial.print("Param value: ");
       //                   Serial.println(p->value());
     }; //    end of for loop
