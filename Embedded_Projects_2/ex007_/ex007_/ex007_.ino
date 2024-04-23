@@ -68,6 +68,7 @@ void buttonPressed(){
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
  }
+
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
@@ -555,7 +556,7 @@ String compdirection(int degree){ //Determine the letters to return with if stat
 void calibrate(){
   float totL = 0;
   float totR = 0;
-  if (LidarAvg() > 30) 
+  if (LidarAvg() > 30)
   {
     go_straight(LidarAvg()-30);
     }
@@ -603,30 +604,30 @@ void eepromRead(){
 void RGBsensor(){
   uint16_t clear, red, green, blue;
   tcs.getRGBC(&red, &green, &blue, &clear);
-  tcs.lock();  
-  Serial.print("C:\t"); 
+  tcs.lock();
+  Serial.print("C:\t");
   Serial.print(clear);
-  Serial.print("\tR:\t"); 
+  Serial.print("\tR:\t");
   Serial.print(red);
-  Serial.print("\tG:\t"); 
+  Serial.print("\tG:\t");
   Serial.print(green);
-  Serial.print("\tB:\t"); 
+  Serial.print("\tB:\t");
   Serial.print(blue);
   Serial.println("\t");
   uint32_t sum = clear;
   float r, g, b;
-  r = red; 
+  r = red;
   r /= sum;
-  g = green; 
+  g = green;
   g /= sum;
-  b = blue; 
+  b = blue;
   b /= sum;
-  r *= 256; 
-  g *= 256; 
+  r *= 256;
+  g *= 256;
   b *= 256;
   Serial.print("\t");
-  Serial.print((int)r, HEX); 
-  Serial.print((int)g, HEX); 
+  Serial.print((int)r, HEX);
+  Serial.print((int)g, HEX);
   Serial.print((int)b, HEX);
   Serial.println();
 }
