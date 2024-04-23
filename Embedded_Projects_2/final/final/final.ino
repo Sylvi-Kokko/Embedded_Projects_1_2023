@@ -221,6 +221,11 @@ if (message="start_program"){
 }
 {calcColDif()}
 
+  co currentColor;
+  currentColor = RGBsensor();
+  co *cptr = &currentColor; // Pointer to the current color
+  match cuCol = calcColDif(cptr); //Return the preset it's the most similar to
+
 }
 if(red) {
   //stop
