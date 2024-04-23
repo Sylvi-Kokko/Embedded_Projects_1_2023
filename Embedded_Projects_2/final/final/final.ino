@@ -6,6 +6,8 @@
 * @date 2024-16-04
 */
 
+// Website sends the following text to serial monitor once button is pressed "start_program"
+
 #include <LiquidCrystal.h>
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
