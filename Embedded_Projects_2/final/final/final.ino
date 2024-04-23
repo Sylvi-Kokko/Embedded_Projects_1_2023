@@ -243,13 +243,17 @@ if(cuCol.color == 0) {
   digitalWrite(Motor_R_dir_pin, Motor_return);
   analogWrite(Motor_L_pwm_pin,50);
   analogWrite(Motor_R_pwm_pin,50);
-  if(current <= target+2 && current >= target-2){
-    digitalWrite(Motor_L_dir_pin, Motor_forward);
-    digitalWrite(Motor_R_dir_pin, Motor_forward);
-    analogWrite(Motor_L_pwm_pin,0);
-    analogWrite(Motor_R_pwm_pin,0);
-    target = -1;
-  }
+  while(true){
+  current = wiregetdegree();
+  if(current <= target+2 && current >= target-2) {
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
+  target=-1
+  break;
+  }  
+}
 }
 if(cuCol.color == 1) {
   enginePower = 30;
