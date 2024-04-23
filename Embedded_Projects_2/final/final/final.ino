@@ -207,6 +207,10 @@ if(pass == -1) {
   analogWrite(Motor_L_pwm_pin,50);
   analogWrite(Motor_R_pwm_pin,50);
   delay(200);
+  digitalWrite(Motor_L_dir_pin, Motor_forward);
+  digitalWrite(Motor_R_dir_pin, Motor_forward);
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
   pass = 1;
   return;
 }
