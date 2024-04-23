@@ -37,6 +37,7 @@ int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 int enginePower = 75;
 bool start = false;
+int target = -1;
 struct match{
   int dif;
   int color;
@@ -250,7 +251,7 @@ if(cuCol.color == 0) {
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
-  target=-1
+  target=-1;
   break;
   }  
 }
@@ -280,12 +281,16 @@ if(myLIDAR.readDistance() <= 12) {
   digitalWrite(Motor_R_dir_pin, Motor_return);
   analogWrite(Motor_L_pwm_pin,50);
   analogWrite(Motor_R_pwm_pin,50);
+  while(true){
+  current = wiregetdegree();
   if(current <= target+2 && current >= target-2){
     digitalWrite(Motor_L_dir_pin, Motor_forward);
     digitalWrite(Motor_R_dir_pin, Motor_forward);
     analogWrite(Motor_L_pwm_pin,0);
     analogWrite(Motor_R_pwm_pin,0);
     target = -1;
+    break;
+  }
   }
 }
 else {
