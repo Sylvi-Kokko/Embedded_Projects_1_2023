@@ -221,10 +221,10 @@ String RGBsensor(int opt){
   g *= 256;
   b *= 256;
   if(opt == 1){
-    if(r > 76){
+    if(r > 70){
       return "red";
     }
-    else if(b > 135){
+    else if(b > 125){
       return "blue";
     }
     else{
