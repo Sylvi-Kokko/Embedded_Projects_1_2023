@@ -274,11 +274,11 @@ void setup() {
     delay(1000);
   }
   for(int i = 0; i < 4; i++){
-    while(digitalRead(19) == LOW){}
+    while(digitalRead(19) == HIGH){}
     colors[i] = RGBsensor();
+    Serial.println("color recorded");
+    delay(100);
   }
-  while(digitalRead(19) == LOW){}
-  LidarAvg();
 }
 
 void loop() {
@@ -287,9 +287,12 @@ void loop() {
       if (message="start_program"){
         start = !start;
       }
-  while(!start){
+  while(start == false){
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
     String message = Serial2.readStringUntil('\n');
     if (message="start_program"){
+      Serial.println("starting program");
       start = !start;
     }
 }
