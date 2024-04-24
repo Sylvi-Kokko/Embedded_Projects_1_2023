@@ -35,7 +35,7 @@ LIDARLite_v4LED myLIDAR;
 const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
-int enginePower = 75;
+int enginePower = 100;
 int backWall=308, rightWall=55, leftWall=233;
 bool start = false, wallHunt = false;
 int wDistB=15, wDistR=10, wDistL=100;
@@ -60,7 +60,7 @@ struct RGB {
   int b;
 };
 RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow (Goal)
-int colDifTreshold = 80;
+int colDifTreshold = 60;
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 typedef struct RGB co;
 struct match calcColDif(co *c);
@@ -286,19 +286,19 @@ void loop() {
   while(start == false){
     analogWrite(Motor_L_pwm_pin,0);
     analogWrite(Motor_R_pwm_pin,0);
-    String message = Serial2.readStringUntil('\n');
-    Serial.println(message);
-    if (message=="start_program"){
+    String message = Serial.readStringUntil('\n');
+    if (message=="start"){
       Serial.println("starting program");
       start = !start;
     }
 }
   co currentColor;
   currentColor = RGBsensor();
-  co *cptr = &currentColor; // Pointer to the current color
-  match cuCol = calcColDif(cptr); //Return the preset it's the most similar to
-
+  Serial.print("rgbsensor");
+  match cuCol = calcColDif(&currentColor); //Return the preset it's the most similar to
+  Serial.print(cuCol.color);
 if(cuCol.color == 0) {
+  Serial.print("Red detected");
   //stop
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
@@ -310,8 +310,8 @@ if(cuCol.color == 0) {
     }
   digitalWrite(Motor_L_dir_pin, Motor_forward);
   digitalWrite(Motor_R_dir_pin, Motor_return);
-  analogWrite(Motor_L_pwm_pin,50);
-  analogWrite(Motor_R_pwm_pin,50);
+  analogWrite(Motor_L_pwm_pin, enginePower);
+  analogWrite(Motor_R_pwm_pin, enginePower);
   while(true){
   current = wiregetdegree();
   if(current <= target+2 && current >= target-2) {
@@ -325,16 +325,20 @@ if(cuCol.color == 0) {
 }
 }
 if(myLIDAR.readDistance() <= 12) {
+  Serial.print("Obstacle detected");
   Obstacle();
 }
 if(cuCol.color == 1) {
+  Serial.print("Blue detected");
   enginePower = 30;
 }
 else if(cuCol.color == 2) { //Detect green
+Serial.print("Yellow detected");
   enginePower = 120;
   wallHunt = true;
 }
 else if(cuCol.color == 3) {
+  Serial.print("Goal detected");
   digitalWrite(Motor_L_dir_pin, Motor_forward);
   digitalWrite(Motor_R_dir_pin, Motor_forward);
   analogWrite(Motor_L_pwm_pin,0);

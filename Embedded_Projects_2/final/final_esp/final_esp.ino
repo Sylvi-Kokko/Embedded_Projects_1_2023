@@ -82,6 +82,8 @@ void setup(){
       if ((p->name()) == "start_program")
       {
         Serial.println("start_program");
+        Serial.println("start_program");
+        Serial.println(p->value());
       };
     }; //    end of for loop
   });  // server on END
@@ -192,7 +194,7 @@ void serial_read() // read serial in string, save received characters to buff[]
 
     } // end of while serial available
 
-    if (done == 1)
+    if (done == 1)  
     {
       done = 0;
       break;

@@ -8,22 +8,21 @@
 </head>
 
 <body>
-    <img src="frog.png" alt="frog" width="100%" height="80%">
     <div id="types">
         <button onclick="startProgram()">Start Program</button>
         <span>Encoder</span>
         <span id="from_mega_enc">Loading....</span>
     </div>
 
-    <script type="text/javascript">
+<script type="text/javascript">
         function startProgram() {
-            var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function () {
-				if (this.readyState == 4 && this.status == 200) {
-            xhttp.open("GET", "/start_program", true);
-            xhttp.send(null);
+    	var xhttp = new XMLHttpRequest();
+    	xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) 
+           console.log();
         }
-	}
+		xhttp.open("GET", '/?start_program', true);
+        xhttp.send(null);
 }
 
 setInterval(function ()									// timer interval function
