@@ -279,14 +279,11 @@ void setup() {
     delay(200);
     Serial.println("Color recorded");
   }
-  while(digitalRead(19) == HIGH){}
-  //lidarAvg();
 }
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
-  String message = Serial2.readStringUntil('\n');
-  while(!start){
+  while(start == false){
     String message = Serial2.readStringUntil('\n');
     if (message="start_program"){
       start = !start;
