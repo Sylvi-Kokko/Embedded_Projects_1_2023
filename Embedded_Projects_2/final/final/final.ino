@@ -59,7 +59,7 @@ struct RGB {
   int g;
   int b;
 };
-RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow
+RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow (Goal)
 int colDifTreshold = 80;
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 typedef struct RGB co;
@@ -95,6 +95,7 @@ for (int i = 0; i < numReadings; i++) {
     factor += LidarVals[i];
   }
     lidAv = factor/MAX_READINGS;
+    Serial2.println("Encoder=" + String(lidAv))
 }
 
 void buttonPressed(){
