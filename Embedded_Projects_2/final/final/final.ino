@@ -275,7 +275,8 @@ void setup() {
     while(digitalRead(19) == LOW){}
     colors[i] = RGBsensor();
   }
-
+  while(digitalRead(19) == LOW){}
+  lidarAvg();
 }
 
 void loop() {
