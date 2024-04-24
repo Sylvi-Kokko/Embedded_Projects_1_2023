@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Leego Robotti</title>
+    <script src="jquery-1.11.3.min.js"></script>
+    <link href="index.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <img src="frog.png" alt="frog" width="100%" height="80%">
+    <div id="types">
+        <button onclick="startProgram()">Start Program</button>
+    </div>
+
+    <script type="text/javascript">
+        function startProgram() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "/start_program", true);
+            xhttp.send();
+        }
+    </script>
+</body>
+
+</html>

@@ -99,30 +99,6 @@ img{
     text-align: center;
 }
 
-.sensors-container {
-    display: flex;
-    justify-content: center; /* Center the items horizontally */
-    align-items: flex-end; /* Align items to the bottom */
-}
-
-.sensor-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center items horizontally */
-    margin-right: 20px; /* Adjust spacing between bars */
-}
-
-.accbar {
-    width: 20px;
-    background-color: #000000;
-}
-
-.accbar-label {
-    text-align: center;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
 button{
     background-color:  rgb(55, 122, 16);
     border: 2px solid rgb(34, 82, 28);

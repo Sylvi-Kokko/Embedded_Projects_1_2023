@@ -79,24 +79,10 @@ void setup(){
       //                      Serial.print("Param name: ");
       //                      Serial.println(p->name());
 
-      if ((p->name()) == "dist")
+      if ((p->name()) == "start_program")
       {
-        Serial.print("Move:");
-        Serial.println(p->value());
+        Serial.println("start_program");
       };
-      if ((p->name()) == "dire")
-      {
-        Serial.print("Turn:");
-        Serial.println(p->value());
-      };
-      if ((p->name()) == "driv")
-      {
-        Serial.print("Drive:");
-        Serial.println(p->value());
-      };
-      
-      //                   Serial.print("Param value: ");
-      //                   Serial.println(p->value());
     }; //    end of for loop
   });  // server on END
 

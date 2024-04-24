@@ -68,6 +68,7 @@ void buttonPressed(){
   analogWrite(Motor_L_pwm_pin,0);
   analogWrite(Motor_R_pwm_pin,0);
  }
+
 void count_reset() { //Count reset is called so that every new motion can start from 0
   left_count = 0;
   right_count = 0;
