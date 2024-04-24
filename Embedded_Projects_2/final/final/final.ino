@@ -79,6 +79,8 @@ void LidarAvg() {
   int olddist = myLIDAR.getDistance();
 for (int i = 0; i < numReadings; i++) {
     count_reset();
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
     analogWrite(Motor_L_pwm_pin,170);
     analogWrite(Motor_R_pwm_pin,170);
     if(right_count >= 14){
@@ -95,7 +97,7 @@ for (int i = 0; i < numReadings; i++) {
     factor += LidarVals[i];
   }
     lidAv = factor/MAX_READINGS;
-    Serial2.println("Encoder=" + String(lidAv))
+    Serial2.println("Encoder=" + String(lidAv));
 }
 
 void buttonPressed(){
@@ -276,7 +278,7 @@ void setup() {
     colors[i] = RGBsensor();
   }
   while(digitalRead(19) == LOW){}
-  lidarAvg();
+  LidarAvg();
 }
 
 void loop() {
