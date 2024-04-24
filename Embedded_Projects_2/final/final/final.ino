@@ -287,6 +287,7 @@ void loop() {
     analogWrite(Motor_L_pwm_pin,0);
     analogWrite(Motor_R_pwm_pin,0);
     String message = Serial2.readStringUntil('\n');
+    Serial.println(message);
     if (message="start_program"){
       Serial.println("starting program");
       start = !start;
