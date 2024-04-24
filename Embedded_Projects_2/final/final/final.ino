@@ -36,9 +36,9 @@ const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 int enginePower = 75;
-int backWall, rightWall, leftWall;
+int backWall=308, rightWall=55, leftWall=233;
 bool start = false, wallHunt = false;
-int wDistB, wDistR, wDistL;
+int wDistB=15, wDistR=10, wDistL=100;
 float lidAv;
 int target = -1;
 int pass = -1;
@@ -277,16 +277,12 @@ void setup() {
     while(digitalRead(19) == HIGH){}
     colors[i] = RGBsensor();
     Serial.println("color recorded");
-    delay(100);
+    delay(200);
   }
 }
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
-  String message = Serial2.readStringUntil('\n');
-      if (message="start_program"){
-        start = !start;
-      }
   while(start == false){
     analogWrite(Motor_L_pwm_pin,0);
     analogWrite(Motor_R_pwm_pin,0);
