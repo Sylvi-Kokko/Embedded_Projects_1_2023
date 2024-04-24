@@ -265,26 +265,26 @@ void setup() {
     Serial.println("Device did not acknowledge! Freezing.");
     delay(1000);
   }
+  analogWrite(Motor_L_pwm_pin,0);
+  analogWrite(Motor_R_pwm_pin,0);
   Serial.println("LIDAR acknowledged!");
   while(!tcs.begin()){
     Serial.println("No TCS34725 found ... check your connections");
     delay(1000);
   }
-  measure();
   for(int i = 0; i < 4; i++){
-    while(digitalRead(19) == LOW){}
+    while(digitalRead(19) == HIGH){}
     colors[i] = RGBsensor();
+    delay(200);
+    Serial.println("Color recorded");
   }
-  while(digitalRead(19) == LOW){}
-  lidarAvg();
+  while(digitalRead(19) == HIGH){}
+  //lidarAvg();
 }
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
   String message = Serial2.readStringUntil('\n');
-      if (message="start_program"){
-        start = !start;
-      }
   while(!start){
     String message = Serial2.readStringUntil('\n');
     if (message="start_program"){
