@@ -124,13 +124,6 @@ void setup(){
               request->send(SPIFFS, "/frog.png", "image/png");
 
               Serial.println("Frog picture GET "); });
-
-  server.on("/frog.png", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              request->send(SPIFFS, "/frog.png", "image/x-icon");
-
-              Serial.println("Frog favicon GET "); });
-
   server.on("/roundslider.min.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
               request->send(SPIFFS, "/roundslider.min.css", "text/css");

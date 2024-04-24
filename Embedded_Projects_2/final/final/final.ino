@@ -63,7 +63,8 @@ RGB colors[4]; //0 = red, 1 = blue, 2 = green, 3 = yellow (Goal)
 int colDifTreshold = 80;
 DFRobot_TCS34725 tcs = DFRobot_TCS34725(&Wire, TCS34725_ADDRESS,TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 typedef struct RGB co;
-struct match calcColDif(co *c);
+RGB currentColor;
+match cuCol;
 
 
 void LidarAvg() {
@@ -215,20 +216,21 @@ if(pass == -1) {
 }
 
 
-struct match calcColDif(co *c){
+void calcColDif(){
+  RGB c = RGBsensor();
   int colorDif;
   match colMatch{500,5};
   for(int i = 0; i < 4; i++){
-    int r_diff = c->r - colors[i].r;
-    int g_diff = c->g - colors[i].g;
-    int b_diff = c->b - colors[i].b;
+    int r_diff = c.r - colors[i].r;
+    int g_diff = c.g - colors[i].g;
+    int b_diff = c.b - colors[i].b;
     colorDif = r_diff + g_diff + b_diff;
     if(colorDif < colMatch.dif){
       colMatch.dif = colorDif;
       colMatch.color = i;
     }
   }
-  return colMatch;
+  cuCol = colMatch;
 }
 
 struct RGB RGBsensor(){
@@ -295,11 +297,8 @@ void loop() {
       start = !start;
     }
 }
-  co currentColor;
-  currentColor = RGBsensor();
-  co *cptr = &currentColor; // Pointer to the current color
-  match cuCol = calcColDif(cptr); //Return the preset it's the most similar to
-
+ //Return the preset it's the most similar to
+calcColDif();  
 if(cuCol.color == 0) {
   //stop
   analogWrite(Motor_L_pwm_pin,0);
@@ -374,10 +373,7 @@ if(wallHunt){
       break;
     }
   }
-  co currentColor;
-  currentColor = RGBsensor();
-  co *cptr = &currentColor; // Pointer to the current color
-  match cuCol = calcColDif(cptr);
+  calcColDif();
   if (cuCol.color == 3){
     return;
   }
@@ -407,10 +403,7 @@ if(wallHunt){
       break;
     }
   }
-  co currentColor;
-  currentColor = RGBsensor();
-  co *cptr = &currentColor; // Pointer to the current color
-  match cuCol = calcColDif(cptr);
+  calcColDif();
   if (cuCol.color == 3){
     return;
   }
@@ -440,10 +433,7 @@ if(wallHunt){
       break;
     }
   }
-  co currentColor;
-  currentColor = RGBsensor();
-  co *cptr = &currentColor; // Pointer to the current color
-  match cuCol = calcColDif(cptr);
+  calcColDif();
   if (cuCol.color == 2){
     return;
   }
