@@ -36,9 +36,9 @@ const byte buttonPin = 19;
 int left_count = 0, right_count = 0, presses = 0, currentIndex = 0;
 int heading = 0;
 int enginePower = 75;
-int backWall, rightWall, leftWall;
+int backWall=308, rightWall=55, leftWall=233;
 bool start = false, wallHunt = false;
-int wDistB, wDistR, wDistL;
+int wDistB=15, wDistR=10, wDistL=100;
 float lidAv;
 int target = -1;
 int pass = -1;
@@ -79,6 +79,8 @@ void LidarAvg() {
   int olddist = myLIDAR.getDistance();
 for (int i = 0; i < numReadings; i++) {
     count_reset();
+    digitalWrite(Motor_L_dir_pin, Motor_forward);
+    digitalWrite(Motor_R_dir_pin, Motor_forward);
     analogWrite(Motor_L_pwm_pin,170);
     analogWrite(Motor_R_pwm_pin,170);
     if(right_count >= 14){
@@ -95,7 +97,7 @@ for (int i = 0; i < numReadings; i++) {
     factor += LidarVals[i];
   }
     lidAv = factor/MAX_READINGS;
-    Serial2.println("Encoder=" + String(lidAv))
+    Serial2.println("Encoder=" + String(lidAv));
 }
 
 void buttonPressed(){
@@ -276,16 +278,19 @@ void setup() {
   for(int i = 0; i < 4; i++){
     while(digitalRead(19) == HIGH){}
     colors[i] = RGBsensor();
+    Serial.println("color recorded");
     delay(200);
-    Serial.println("Color recorded");
   }
 }
 
 void loop() {
 // while loop to wait until start button is pressed on website, and won't check again after starting.
   while(start == false){
+    analogWrite(Motor_L_pwm_pin,0);
+    analogWrite(Motor_R_pwm_pin,0);
     String message = Serial2.readStringUntil('\n');
     if (message="start_program"){
+      Serial.println("starting program");
       start = !start;
     }
 }
